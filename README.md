@@ -168,7 +168,7 @@ For backward compatibility, exported files also include `checked`.
 
 ## Example Form
 
-- Example generic form: [form_example.json](/c:/Users/zatloukal/Documents/dev/sqa-kickstart-framework/app_audit/form_example.json)
+- Example generic form: [form_example.json](form_example.json)
 
 
 ## Typical Use Cases
