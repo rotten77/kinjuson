@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kinjuson - Interactive Form</title>
+  <style>
+    :root {
+      --accent: #111111;
+      --accent-dark: #000000;
+      --accent-text: #111111;
+      --accent-border-soft: #d2d2d2;
+      --accent-bg-soft: #efefef;
+      --accent-bg-soft-strong: #e2e2e2;
+      --accent-shadow: rgba(17, 17, 17, 0.1);
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      color: #1a1a2e;
+      background: #f5f6fa;
+      min-height: 100vh;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+      color: #fff;
+      padding: 2rem 1.5rem;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    header h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    header .subtitle {
+      margin-top: 0.3rem;
+      opacity: 0.85;
+      font-size: 0.95rem;
+    }
+
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      background: #fff;
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .topbar-left {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .project-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .project-info label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.01em;
+    }
+
+    .project-info input {
+      padding: 0.5rem 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 1rem;
+      min-width: 200px;
+    }
+
+    .topbar-right {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 0.6rem 1.2rem;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--accent-dark);
+    }
+
+    .btn-secondary {
+      background: #757575;
+      color: #fff;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: #616161;
+    }
+
+    .btn-light {
+      background: #eef6f0;
+      color: var(--accent-text);
+      border: 1px solid var(--accent-border-soft);
+    }
+
+    .btn-light:hover:not(:disabled) {
+      background: #e3f1e8;
+    }
+
+    .btn-small {
+      padding: 0.4rem 0.8rem;
+      font-size: 0.85rem;
+    }
+
+    .summary {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 8px;
+      margin-bottom: 2rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .summary h2 {
+      margin-bottom: 1.5rem;
+      color: #16213e;
+      font-size: 1.3rem;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .summary-card {
+      background: linear-gradient(135deg, #f5f5f5 0%, #f9f9f9 100%);
+      padding: 1.5rem;
+      border-radius: 6px;
+      text-align: center;
+      border-left: 4px solid var(--accent);
+    }
+
+    .summary-card.good {
+      border-left-color: var(--accent);
+    }
+
+    .summary-card.medium {
+      border-left-color: #f57c00;
+    }
+
+    .summary-card.poor {
+      border-left-color: #c62828;
+    }
+
+    .summary-card label {
+      display: block;
+      font-size: 0.85rem;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.01em;
+      margin-bottom: 0.5rem;
+    }
+
+    .summary-card .value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #1a1a2e;
+    }
+
+    .summary-card .sublabel {
+      font-size: 0.8rem;
+      color: #999;
+      margin-top: 0.5rem;
+    }
+
+    .section {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 8px;
+      margin-bottom: 2rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid #e0e0e0;
+      gap: 1rem;
+    }
+
+    .section-title h3 {
+      font-size: 1.5rem;
+      color: #16213e;
+    }
+
+    .section-score {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--accent);
+      background: var(--accent-bg-soft);
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+
+    .section-score.good {
+      background: var(--accent-bg-soft-strong);
+      color: var(--accent);
+    }
+
+    .section-score.medium {
+      background: #ffe0b2;
+      color: #e65100;
+    }
+
+    .section-score.poor {
+      background: #ffcdd2;
+      color: #b71c1c;
+    }
+
+    .subsection {
+      margin-bottom: 2rem;
+    }
+
+    .subsection-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #1a1a2e;
+      margin-bottom: 1rem;
+    }
+
+    .checkbox-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+      padding-left: 1rem;
+    }
+
+    .checkbox-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+    }
+
+    .question-state-control {
+      display: inline-flex;
+      gap: 0.35rem;
+      flex-wrap: wrap;
+      min-width: 176px;
+    }
+
+    .state-option {
+      border: 1px solid #cfd8dc;
+      background: #fff;
+      color: #455a64;
+      border-radius: 999px;
+      padding: 0.35rem 0.7rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .state-option:hover {
+      border-color: #90a4ae;
+    }
+
+    .state-option.is-active[data-state="unset"] {
+      background: #eceff1;
+      border-color: #b0bec5;
+      color: #37474f;
+    }
+
+    .state-option.is-active[data-state="yes"] {
+      background: #dff7e8;
+      border-color: #8dd3a7;
+      color: var(--accent-text);
+    }
+
+    .state-option.is-active[data-state="no"] {
+      background: #fde3e3;
+      border-color: #ef9a9a;
+      color: #b71c1c;
+    }
+
+    .checkbox-item label {
+      flex: 1;
+      user-select: none;
+      color: #1a1a2e;
+    }
+
+    .checkbox-item[data-state="yes"] label {
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    .checkbox-item[data-state="no"] label {
+      color: #b71c1c;
+      font-weight: 500;
+    }
+
+    .comment-box {
+      margin-top: 1.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid #e0e0e0;
+    }
+
+    .comment-textarea {
+      width: 100%;
+      min-height: 80px;
+      padding: 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      resize: vertical;
+      color: #1a1a2e;
+    }
+
+    .comment-textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-shadow);
+    }
+
+    .comment-textarea::placeholder {
+      color: #999;
+    }
+
+    .empty-state {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 8px;
+      margin-bottom: 2rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      text-align: center;
+    }
+
+    .empty-state h2 {
+      color: #16213e;
+      margin-bottom: 0.75rem;
+    }
+
+    .empty-state p {
+      color: #666;
+      max-width: 720px;
+      margin: 0 auto 1rem;
+    }
+
+    .empty-state .actions {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+
+    .status-bar {
+      margin-bottom: 1rem;
+      padding: 0.9rem 1rem;
+      background: #eef6f0;
+      color: var(--accent-text);
+      border: 1px solid var(--accent-border-soft);
+      border-radius: 8px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: #e0e0e0;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 0.5rem;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-dark));
+      transition: width 0.3s ease;
+    }
+
+    footer {
+      background: #4a4a4a;
+      color: #fff;
+      padding: 2rem 1.5rem;
+      text-align: center;
+      margin-top: 3rem;
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 768px) {
+      header h1 {
+        font-size: 1.4rem;
+      }
+
+      main {
+        padding: 1rem;
+      }
+
+      .topbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .topbar-left {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .topbar-right {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .section {
+        padding: 1.5rem;
+      }
+
+      .section-title {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 id="page-title">Kinjuson</h1>
+    <p class="subtitle" id="page-subtitle">Machine structures, human inputs</p>
+  </header>
+
+  <main>
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="project-info">
+          <label for="project-name" id="project-name-label">Form name</label>
+          <input type="text" id="project-name" placeholder="Enter form name...">
+        </div>
+        <div class="project-info">
+          <label for="audit-date" id="audit-date-label">processing date</label>
+          <input type="date" id="audit-date">
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-primary" id="btn-import-json" type="button">Import JSON</button>
+        <button class="btn btn-secondary" id="btn-export-json" type="button" disabled>Export JSON</button>
+        <button class="btn btn-secondary btn-small" id="btn-clear" type="button" disabled>Clear</button>
+      </div>
+    </div>
+
+    <input type="file" id="json-file-input" class="hidden" accept=".json,application/json">
+
+    <div class="status-bar hidden" id="status-bar"></div>
+
+    <div class="empty-state" id="empty-state">
+      <h2>Import JSON data first</h2>
+      <p>The app starts without any data. Import an empty template or a work-in-progress form in JSON format, then edit the data and export it again.</p>
+      <div class="actions">
+        <button class="btn btn-primary" id="btn-import-json-empty" type="button">Choose JSON file</button>
+      </div>
+    </div>
+
+    <div class="summary hidden" id="summary">
+      <h2>Overall form score</h2>
+      <div class="summary-grid">
+        <div class="summary-card" id="overall-score-card">
+          <label>Overall score</label>
+          <div class="value" id="overall-score">0</div>
+          <div class="sublabel">out of 100%</div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="overall-progress" style="width: 0%"></div>
+          </div>
+        </div>
+        <div class="summary-card">
+          <label>Answered</label>
+          <div class="value" id="answered-ratio">0/0</div>
+          <div class="sublabel">answered / total questions</div>
+        </div>
+        <div class="summary-card">
+          <label>Yes</label>
+          <div class="value" id="total-yes">0</div>
+          <div class="sublabel">positive answers</div>
+        </div>
+        <div class="summary-card">
+          <label>Completion rate</label>
+          <div class="value" id="completion-percent">0%</div>
+          <div class="sublabel">form completion</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="sections-container"></div>
+  </main>
+
+  <footer>
+    <p>Kinjuson - an interactive tool for analysis, goals, and structured assessments</p>
+  </footer>
+
+  <script>
+    (function() {
+      "use strict";
+
+      let auditData = null;
+      let checkStates = {};
+      let commentStates = {};
+      let formMetadata = {};
+      let themeColor = "";
+      const defaultHeaderTitle = "Kinjuson";
+      const defaultHeaderSubtitle = "Machine structures, human inputs";
+      const defaultFormMetadata = {
+        nameLabel: "Form name",
+        namePlaceholder: "Enter form name...",
+        dateLabel: "processing date"
+      };
+      const defaultThemeColor = "#111111";
+
+      document.addEventListener("DOMContentLoaded", init);
+
+      function init() {
+        bindEvents();
+        updateUIState();
+        updateScores();
+      }
+
+      function bindEvents() {
+        document.getElementById("btn-import-json").addEventListener("click", openImportDialog);
+        document.getElementById("btn-import-json-empty").addEventListener("click", openImportDialog);
+        document.getElementById("btn-export-json").addEventListener("click", exportToJSON);
+        document.getElementById("btn-clear").addEventListener("click", clearCurrentForm);
+        document.getElementById("json-file-input").addEventListener("change", handleImportFile);
+      }
+
+      function openImportDialog() {
+        document.getElementById("json-file-input").click();
+      }
+
+      function handleImportFile(event) {
+        const file = event.target.files && event.target.files[0];
+        if (!file) {
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(loadEvent) {
+          try {
+            const imported = JSON.parse(loadEvent.target.result);
+            importJSONData(imported, file.name);
+            event.target.value = "";
+          } catch (error) {
+            console.error("Error importing JSON:", error);
+            alert("The file could not be loaded. Please make sure it contains valid JSON.");
+            event.target.value = "";
+          }
+        };
+
+        reader.onerror = function() {
+          alert("The file could not be read.");
+          event.target.value = "";
+        };
+
+        reader.readAsText(file, "utf-8");
+      }
+
+      function importJSONData(sourceData, sourceName) {
+        const normalized = normalizeImportedData(sourceData);
+
+        auditData = {
+          sections: normalized.sections
+        };
+        checkStates = normalized.checkStates;
+        commentStates = normalized.commentStates;
+        formMetadata = normalized.formMetadata;
+        themeColor = normalized.themeColor;
+
+        document.getElementById("project-name").value = normalized.formName;
+        document.getElementById("audit-date").value = normalized.processingDate;
+        updateHeaderContent(normalized.formTitle, normalized.formDescription);
+        updateFormFieldMetadata(normalized.formMetadata);
+        applyThemeColor(normalized.themeColor);
+
+        renderSections();
+        updateUIState();
+        updateScores();
+        showStatus("Loaded file: " + sourceName);
+      }
+
+      function normalizeImportedData(sourceData) {
+        if (!sourceData || !Array.isArray(sourceData.sections)) {
+          throw new Error("The JSON does not contain a sections array.");
+        }
+
+        const normalizedSections = [];
+        const nextCheckStates = {};
+        const nextCommentStates = {};
+
+        sourceData.sections.forEach(function(section, sectionIndex) {
+          const sectionId = section.id || String(sectionIndex + 1);
+          const normalizedSection = {
+            id: String(sectionId),
+            title: section.title || ("Section " + (sectionIndex + 1)),
+            subsections: []
+          };
+
+          const subsections = Array.isArray(section.subsections) ? section.subsections : [];
+
+          subsections.forEach(function(subsection, subIndex) {
+            const normalizedSubsection = {
+              title: subsection.title || ("Subsection " + (subIndex + 1)),
+              questions: []
+            };
+
+            const commentId = getCommentId(sectionId, subIndex);
+            nextCommentStates[commentId] = typeof subsection.note === "string" ? subsection.note : "";
+
+            const questions = Array.isArray(subsection.questions) ? subsection.questions : [];
+            questions.forEach(function(question, questionIndex) {
+              let questionText = "";
+              let state = "unset";
+
+              if (typeof question === "string") {
+                questionText = question;
+              } else if (question && typeof question === "object") {
+                questionText = question.text || question.label || "";
+                state = normalizeQuestionState(question);
+              }
+
+              if (!questionText) {
+                return;
+              }
+
+              normalizedSubsection.questions.push(questionText);
+              nextCheckStates[getCheckId(sectionId, subIndex, questionIndex)] = state;
+            });
+
+            normalizedSection.subsections.push(normalizedSubsection);
+          });
+
+          normalizedSections.push(normalizedSection);
+        });
+
+        return {
+          formName: readFirstString([
+            sourceData.formName,
+            sourceData.meta && sourceData.meta.formName,
+            sourceData.form && sourceData.form.name,
+            sourceData.project && sourceData.project.name
+          ]),
+          formTitle: readFirstString([
+            sourceData.title,
+            sourceData.meta && sourceData.meta.title,
+            sourceData.form && sourceData.form.title,
+            sourceData.project && sourceData.project.title,
+            sourceData.form && sourceData.form.name
+          ]),
+          formDescription: readFirstString([
+            sourceData.description,
+            sourceData.meta && sourceData.meta.description,
+            sourceData.form && sourceData.form.description,
+            sourceData.project && sourceData.project.description
+          ]),
+          themeColor: normalizeThemeColor(readFirstString([
+            sourceData.form && sourceData.form.themeColor,
+            sourceData.themeColor,
+            sourceData.meta && sourceData.meta.themeColor,
+            sourceData.project && sourceData.project.themeColor
+          ])),
+          processingDate: readFirstString([
+            sourceData.processingDate,
+            sourceData.meta && sourceData.meta.processingDate,
+            sourceData.form && sourceData.form.date,
+            sourceData.project && sourceData.project.date,
+            sourceData.auditDate
+          ]),
+          formMetadata: {
+            nameLabel: readFirstString([
+              sourceData.form && sourceData.form.nameLabel,
+              sourceData.meta && sourceData.meta.nameLabel,
+              sourceData.project && sourceData.project.nameLabel
+            ]) || defaultFormMetadata.nameLabel,
+            namePlaceholder: readFirstString([
+              sourceData.form && sourceData.form.namePlaceholder,
+              sourceData.meta && sourceData.meta.namePlaceholder,
+              sourceData.project && sourceData.project.namePlaceholder
+            ]) || defaultFormMetadata.namePlaceholder,
+            dateLabel: readFirstString([
+              sourceData.form && sourceData.form.dateLabel,
+              sourceData.meta && sourceData.meta.dateLabel,
+              sourceData.project && sourceData.project.dateLabel
+            ]) || defaultFormMetadata.dateLabel
+          },
+          sections: normalizedSections,
+          checkStates: nextCheckStates,
+          commentStates: nextCommentStates
+        };
+      }
+
+      function readFirstString(values) {
+        for (let i = 0; i < values.length; i++) {
+          if (typeof values[i] === "string") {
+            return values[i];
+          }
+        }
+        return "";
+      }
+
+      function renderSections() {
+        const container = document.getElementById("sections-container");
+        container.innerHTML = "";
+
+        if (!auditData || !Array.isArray(auditData.sections) || !auditData.sections.length) {
+          return;
+        }
+
+        auditData.sections.forEach(function(section) {
+          const sectionEl = document.createElement("div");
+          sectionEl.className = "section";
+          sectionEl.id = "section-" + section.id;
+
+          let sectionHTML = `
+            <div class="section-title">
+              <h3>${escapeHtml(section.id)}. ${escapeHtml(section.title)}</h3>
+              <div class="section-score" id="score-${escapeAttribute(section.id)}">0%</div>
+            </div>
+          `;
+
+          section.subsections.forEach(function(subsection, subIdx) {
+            const commentId = getCommentId(section.id, subIdx);
+
+            sectionHTML += `
+              <div class="subsection">
+                <div class="subsection-title">${escapeHtml(subsection.title)}</div>
+                <div class="checkbox-list">
+            `;
+
+            subsection.questions.forEach(function(question, qIdx) {
+              const checkId = getCheckId(section.id, subIdx, qIdx);
+              const state = normalizeCheckState(checkStates[checkId]);
+
+              sectionHTML += `
+                <div class="checkbox-item" data-state="${escapeAttribute(state)}">
+                  <div class="question-state-control" role="group" aria-label="Answer state">
+                    ${renderStateButton(checkId, "unset", "Unset", state)}
+                    ${renderStateButton(checkId, "yes", "Yes", state)}
+                    ${renderStateButton(checkId, "no", "No", state)}
+                  </div>
+                  <label>${escapeHtml(question)}</label>
+                </div>
+              `;
+            });
+
+            sectionHTML += `
+                </div>
+                <div class="comment-box">
+                  <textarea id="${escapeAttribute(commentId)}" class="comment-textarea" placeholder="Note / comment for this section..."></textarea>
+                </div>
+              </div>
+            `;
+          });
+
+          sectionEl.innerHTML = sectionHTML;
+          container.appendChild(sectionEl);
+
+          sectionEl.querySelectorAll(".state-option").forEach(function(button) {
+            button.addEventListener("click", onStateButtonClick);
+          });
+
+          sectionEl.querySelectorAll(".comment-textarea").forEach(function(textarea) {
+            textarea.value = commentStates[textarea.id] || "";
+            textarea.addEventListener("input", onCommentChange);
+          });
+        });
+      }
+
+      function onStateButtonClick(event) {
+        const button = event.currentTarget;
+        const checkId = button.dataset.checkId;
+        const nextState = normalizeCheckState(button.dataset.state);
+        checkStates[checkId] = nextState;
+        syncQuestionStateUI(checkId, nextState);
+        updateScores();
+      }
+
+      function onCommentChange(event) {
+        commentStates[event.target.id] = event.target.value;
+      }
+
+      function updateScores() {
+        let totalQuestions = 0;
+        let totalAnswered = 0;
+        let totalYes = 0;
+
+        if (auditData && Array.isArray(auditData.sections)) {
+          auditData.sections.forEach(function(section) {
+            let sectionQuestions = 0;
+            let sectionYes = 0;
+
+            section.subsections.forEach(function(subsection, subIdx) {
+              subsection.questions.forEach(function(_, qIdx) {
+                const checkId = getCheckId(section.id, subIdx, qIdx);
+                const state = normalizeCheckState(checkStates[checkId]);
+                sectionQuestions++;
+                totalQuestions++;
+
+                if (state !== "unset") {
+                  totalAnswered++;
+                }
+
+                if (state === "yes") {
+                  sectionYes++;
+                  totalYes++;
+                }
+              });
+            });
+
+            const scoreEl = document.getElementById("score-" + section.id);
+            if (scoreEl) {
+              const sectionScore = sectionQuestions > 0 ? (sectionYes / sectionQuestions) * 100 : 0;
+              scoreEl.className = "section-score " + getScoringClass(sectionScore);
+              scoreEl.textContent = Math.round(sectionScore) + "%";
+            }
+          });
+        }
+
+        const overallScore = totalQuestions > 0 ? (totalYes / totalQuestions) * 100 : 0;
+        const overallScoreCard = document.getElementById("overall-score-card");
+
+        overallScoreCard.className = "summary-card " + getScoringClass(overallScore);
+        document.getElementById("overall-score").textContent = String(Math.round(overallScore));
+        document.getElementById("answered-ratio").textContent = String(totalAnswered) + "/" + String(totalQuestions);
+        document.getElementById("total-yes").textContent = String(totalYes);
+        document.getElementById("completion-percent").textContent = (totalQuestions > 0 ? Math.round((totalAnswered / totalQuestions) * 100) : 0) + "%";
+        document.getElementById("overall-progress").style.width = Math.round(overallScore) + "%";
+      }
+
+      function getScoringClass(score) {
+        if (score >= 70) {
+          return "good";
+        }
+        if (score >= 40) {
+          return "medium";
+        }
+        return "poor";
+      }
+
+      function exportToJSON() {
+        if (!auditData || !Array.isArray(auditData.sections) || !auditData.sections.length) {
+          alert("Import JSON data first.");
+          return;
+        }
+
+        const formName = document.getElementById("project-name").value;
+        const processingDate = document.getElementById("audit-date").value;
+        const jsonData = {
+          app: "Kinjuson",
+          version: 1,
+          form: {
+            title: document.getElementById("page-title").textContent,
+            description: document.getElementById("page-subtitle").textContent,
+            themeColor: getThemeColorValue(),
+            nameLabel: getFormMetadataValue("nameLabel"),
+            namePlaceholder: getFormMetadataValue("namePlaceholder"),
+            dateLabel: getFormMetadataValue("dateLabel"),
+            name: formName,
+            date: processingDate
+          },
+          sections: []
+        };
+
+        auditData.sections.forEach(function(section) {
+          const sectionData = {
+            id: section.id,
+            title: section.title,
+            subsections: []
+          };
+
+          section.subsections.forEach(function(subsection, subIdx) {
+            const subsectionData = {
+              title: subsection.title,
+              note: commentStates[getCommentId(section.id, subIdx)] || "",
+              questions: []
+            };
+
+            subsection.questions.forEach(function(question, qIdx) {
+              const state = normalizeCheckState(checkStates[getCheckId(section.id, subIdx, qIdx)]);
+              subsectionData.questions.push({
+                text: question,
+                state: state,
+                checked: state === "yes"
+              });
+            });
+
+            sectionData.subsections.push(subsectionData);
+          });
+
+          jsonData.sections.push(sectionData);
+        });
+
+        const formTitle = document.getElementById("page-title").textContent;
+        const suggestedPrefix = sanitizeFileName(formTitle || "form");
+        const suggestedName = sanitizeFileName(formName || "form");
+        const suggestedDate = processingDate || new Date().toISOString().split("T")[0];
+        downloadFile(
+          JSON.stringify(jsonData, null, 2),
+          suggestedPrefix + "_" + suggestedName + "_" + suggestedDate + ".json",
+          "application/json;charset=utf-8"
+        );
+      }
+
+      function clearCurrentForm() {
+        if (!auditData || !Array.isArray(auditData.sections) || !auditData.sections.length) {
+          return;
+        }
+
+        if (!confirm("Do you really want to clear the currently loaded form data?")) {
+          return;
+        }
+
+        checkStates = {};
+        commentStates = {};
+        formMetadata = {};
+        themeColor = "";
+        document.getElementById("project-name").value = "";
+        document.getElementById("audit-date").value = "";
+        updateHeaderContent("", "");
+        updateFormFieldMetadata(defaultFormMetadata);
+        applyThemeColor("");
+        renderSections();
+        updateScores();
+        showStatus("The current form data has been cleared.");
+      }
+
+      function updateUIState() {
+        const hasData = Boolean(auditData && Array.isArray(auditData.sections) && auditData.sections.length);
+
+        document.getElementById("empty-state").classList.toggle("hidden", hasData);
+        document.getElementById("summary").classList.toggle("hidden", !hasData);
+        document.getElementById("btn-export-json").disabled = !hasData;
+        document.getElementById("btn-clear").disabled = !hasData;
+        document.getElementById("project-name").disabled = !hasData;
+        document.getElementById("audit-date").disabled = !hasData;
+
+        if (!hasData) {
+          document.getElementById("sections-container").innerHTML = "";
+        }
+      }
+
+      function showStatus(message) {
+        const statusBar = document.getElementById("status-bar");
+        statusBar.textContent = message;
+        statusBar.classList.remove("hidden");
+      }
+
+      function getCheckId(sectionId, subIndex, questionIndex) {
+        return "check_" + sectionId + "_" + subIndex + "_" + questionIndex;
+      }
+
+      function getCommentId(sectionId, subIndex) {
+        return "comment_" + sectionId + "_" + subIndex;
+      }
+
+      function updateHeaderContent(title, description) {
+        const pageTitle = document.getElementById("page-title");
+        const pageSubtitle = document.getElementById("page-subtitle");
+        const nextTitle = typeof title === "string" && title.trim() ? title.trim() : defaultHeaderTitle;
+        const nextDescription = typeof description === "string" && description.trim() ? description.trim() : defaultHeaderSubtitle;
+
+        pageTitle.textContent = nextTitle;
+        pageSubtitle.textContent = nextDescription;
+      }
+
+      function updateFormFieldMetadata(metadata) {
+        const nextMetadata = metadata || defaultFormMetadata;
+        document.getElementById("project-name-label").textContent = nextMetadata.nameLabel || defaultFormMetadata.nameLabel;
+        document.getElementById("project-name").placeholder = nextMetadata.namePlaceholder || defaultFormMetadata.namePlaceholder;
+        document.getElementById("audit-date-label").textContent = nextMetadata.dateLabel || defaultFormMetadata.dateLabel;
+      }
+
+      function getFormMetadataValue(key) {
+        if (formMetadata && typeof formMetadata[key] === "string" && formMetadata[key].trim()) {
+          return formMetadata[key].trim();
+        }
+        return defaultFormMetadata[key] || "";
+      }
+
+      function getThemeColorValue() {
+        return themeColor || defaultThemeColor;
+      }
+
+      function normalizeThemeColor(value) {
+        const trimmedValue = typeof value === "string" ? value.trim() : "";
+        return /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(trimmedValue) ? trimmedValue : "";
+      }
+
+      function applyThemeColor(color) {
+        const rootStyle = document.documentElement.style;
+        const accent = normalizeThemeColor(color) || defaultThemeColor;
+
+        rootStyle.setProperty("--accent", accent);
+        rootStyle.setProperty("--accent-dark", mixHexColor(accent, "#000000", 0.2));
+        rootStyle.setProperty("--accent-text", mixHexColor(accent, "#000000", 0.36));
+        rootStyle.setProperty("--accent-border-soft", mixHexColor(accent, "#ffffff", 0.78));
+        rootStyle.setProperty("--accent-bg-soft", mixHexColor(accent, "#ffffff", 0.82));
+        rootStyle.setProperty("--accent-bg-soft-strong", mixHexColor(accent, "#ffffff", 0.74));
+        rootStyle.setProperty("--accent-shadow", hexToRgba(accent, 0.1));
+      }
+
+      function mixHexColor(baseHex, mixHex, ratio) {
+        const base = hexToRgb(baseHex);
+        const mix = hexToRgb(mixHex);
+        const clampedRatio = Math.max(0, Math.min(1, ratio));
+
+        return rgbToHex(
+          Math.round(base.r * (1 - clampedRatio) + mix.r * clampedRatio),
+          Math.round(base.g * (1 - clampedRatio) + mix.g * clampedRatio),
+          Math.round(base.b * (1 - clampedRatio) + mix.b * clampedRatio)
+        );
+      }
+
+      function hexToRgb(hex) {
+        const normalized = normalizeThemeColor(hex) || defaultThemeColor;
+        const shortHex = normalized.length === 4;
+        const parts = shortHex
+          ? normalized.slice(1).split("").map(function(char) { return char + char; })
+          : [normalized.slice(1, 3), normalized.slice(3, 5), normalized.slice(5, 7)];
+
+        return {
+          r: parseInt(parts[0], 16),
+          g: parseInt(parts[1], 16),
+          b: parseInt(parts[2], 16)
+        };
+      }
+
+      function rgbToHex(r, g, b) {
+        return "#" + [r, g, b].map(function(channel) {
+          return channel.toString(16).padStart(2, "0");
+        }).join("");
+      }
+
+      function hexToRgba(hex, alpha) {
+        const rgb = hexToRgb(hex);
+        return "rgba(" + rgb.r + ", " + rgb.g + ", " + rgb.b + ", " + alpha + ")";
+      }
+
+      function normalizeQuestionState(question) {
+        if (question && typeof question.state === "string") {
+          return normalizeCheckState(question.state);
+        }
+        if (question && typeof question.answer === "string") {
+          return normalizeCheckState(question.answer);
+        }
+        if (question && typeof question.checked === "boolean") {
+          return question.checked ? "yes" : "unset";
+        }
+        return "unset";
+      }
+
+      function normalizeCheckState(value) {
+        if (value === "yes" || value === "checked" || value === true) {
+          return "yes";
+        }
+        if (value === "no" || value === false) {
+          return "no";
+        }
+        return "unset";
+      }
+
+      function renderStateButton(checkId, state, label, activeState) {
+        const activeClass = state === activeState ? " is-active" : "";
+        return `<button type="button" class="state-option${activeClass}" data-check-id="${escapeAttribute(checkId)}" data-state="${escapeAttribute(state)}" aria-pressed="${state === activeState ? "true" : "false"}">${escapeHtml(label)}</button>`;
+      }
+
+      function syncQuestionStateUI(checkId, state) {
+        const buttons = document.querySelectorAll('[data-check-id="' + cssEscape(checkId) + '"]');
+        buttons.forEach(function(button) {
+          const isActive = button.dataset.state === state;
+          button.classList.toggle("is-active", isActive);
+          button.setAttribute("aria-pressed", isActive ? "true" : "false");
+        });
+
+        const item = buttons.length ? buttons[0].closest(".checkbox-item") : null;
+        if (item) {
+          item.setAttribute("data-state", state);
+        }
+      }
+
+      function cssEscape(value) {
+        if (window.CSS && typeof window.CSS.escape === "function") {
+          return window.CSS.escape(value);
+        }
+        return String(value).replace(/["\\]/g, "\\$&");
+      }
+
+      function sanitizeFileName(value) {
+        return value
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-z0-9]+/g, "_")
+          .replace(/^_+|_+$/g, "") || "formular";
+      }
+
+      function downloadFile(content, fileName, mimeType) {
+        const blob = new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = fileName;
+        link.click();
+        URL.revokeObjectURL(url);
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      function escapeAttribute(value) {
+        return escapeHtml(value).replace(/`/g, "&#96;");
+      }
+    })();
+  </script>
+</body>
+</html>

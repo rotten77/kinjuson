@@ -1,0 +1,70 @@
+{
+  "app": "Kinjuson",
+  "version": 1,
+  "form": {
+    "title": "Website Launch Readiness",
+    "description": "A simple example form for checking whether a website is ready to launch.",
+    "themeColor": "#1d6fd6",
+    "nameLabel": "Project",
+    "namePlaceholder": "Enter project name...",
+    "name": "Marketing Site Refresh",
+    "dateLabel": "Review date",
+    "date": "2026-03-26"
+  },
+  "sections": [
+    {
+      "id": "1",
+      "title": "Content",
+      "subsections": [
+        {
+          "title": "Core pages",
+          "note": "Homepage is done, pricing page still needs legal review.",
+          "questions": [
+            {
+              "text": "Homepage copy is final",
+              "state": "yes",
+              "checked": true
+            },
+            {
+              "text": "Pricing page has been approved",
+              "state": "no",
+              "checked": false
+            },
+            {
+              "text": "Contact page includes current team details",
+              "state": "unset",
+              "checked": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "2",
+      "title": "Quality Checks",
+      "subsections": [
+        {
+          "title": "Pre-launch review",
+          "note": "",
+          "questions": [
+            {
+              "text": "Forms submit successfully",
+              "state": "yes",
+              "checked": true
+            },
+            {
+              "text": "Mobile layout has been reviewed",
+              "state": "yes",
+              "checked": true
+            },
+            {
+              "text": "Analytics tracking is verified",
+              "state": "unset",
+              "checked": false
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
