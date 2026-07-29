@@ -1,1072 +1,2066 @@
 <!DOCTYPE html>
-<html lang="cs">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kinjuson - Interactive Form</title>
+  <title>Kinjuson Editor</title>
   <style>
     :root {
-      --accent: #111111;
-      --accent-dark: #000000;
-      --accent-text: #111111;
-      --accent-border-soft: #d2d2d2;
-      --accent-bg-soft: #efefef;
-      --accent-bg-soft-strong: #e2e2e2;
-      --accent-shadow: rgba(17, 17, 17, 0.1);
+      --canvas: #f4f6f8;
+      --panel: #ffffff;
+      --panel-strong: #ffffff;
+      --panel-border: #d4dbe3;
+      --panel-border-strong: #aeb9c6;
+      --text: #182230;
+      --muted: #66758a;
+      --shadow: none;
+      --accent: #1d6fd6;
+      --accent-dark: #154b91;
+      --accent-text: #0f172a;
+      --accent-soft: #e7f0fd;
+      --accent-soft-strong: #d8e7fb;
+      --accent-border-soft: rgba(29, 111, 214, 0.22);
+      --accent-shadow: rgba(29, 111, 214, 0.12);
+      --danger: #b42318;
+      --danger-soft: #fee4e2;
+      --warning: #b54708;
+      --success: #027a48;
+      --radius-xl: 5px;
+      --radius-lg: 5px;
+      --radius-md: 4px;
     }
 
-    *, *::before, *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { min-height: 100%; }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      line-height: 1.6;
-      color: #1a1a2e;
-      background: #f5f6fa;
+      margin: 0;
+      font-family: sans-serif;
+      color: var(--text);
+      background: var(--canvas);
+      line-height: 1.5;
       min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
 
-    header {
-      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
-      color: #fff;
-      padding: 2rem 1.5rem;
-      text-align: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
+    button, input, textarea, select { font: inherit; color: inherit; }
+    button { border: 0; background: none; }
 
-    header h1 {
-      font-size: 1.8rem;
-      font-weight: 700;
-      letter-spacing: 0.02em;
-    }
-
-    header .subtitle {
-      margin-top: 0.3rem;
-      opacity: 0.85;
-      font-size: 0.95rem;
-    }
-
-    main {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 2rem 1.5rem;
-    }
-
-    .topbar {
+    .app-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 2rem;
-      background: #fff;
-      padding: 1.5rem;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-      flex-wrap: wrap;
-      gap: 1rem;
-    }
-
-    .topbar-left {
-      display: flex;
-      gap: 1rem;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .project-info {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-
-    .project-info label {
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: #666;
-      text-transform: uppercase;
-      letter-spacing: 0.01em;
-    }
-
-    .project-info input {
-      padding: 0.5rem 0.75rem;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 1rem;
-      min-width: 200px;
-    }
-
-    .topbar-right {
-      display: flex;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-    }
-
-    .btn {
-      padding: 0.6rem 1.2rem;
-      border: none;
-      border-radius: 6px;
-      font-size: 0.95rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      text-decoration: none;
-    }
-
-    .btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    .btn-primary {
-      background: var(--accent);
-      color: #fff;
-    }
-
-    .btn-primary:hover:not(:disabled) {
-      background: var(--accent-dark);
-    }
-
-    .btn-secondary {
-      background: #757575;
-      color: #fff;
-    }
-
-    .btn-secondary:hover:not(:disabled) {
-      background: #616161;
-    }
-
-    .btn-light {
-      background: #eef6f0;
-      color: var(--accent-text);
-      border: 1px solid var(--accent-border-soft);
-    }
-
-    .btn-light:hover:not(:disabled) {
-      background: #e3f1e8;
-    }
-
-    .btn-small {
-      padding: 0.4rem 0.8rem;
-      font-size: 0.85rem;
-    }
-
-    .summary {
-      background: #fff;
-      padding: 2rem;
-      border-radius: 8px;
-      margin-bottom: 2rem;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-
-    .summary h2 {
-      margin-bottom: 1.5rem;
-      color: #16213e;
-      font-size: 1.3rem;
-    }
-
-    .summary-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 1.5rem;
+      padding: 0.85rem 1.25rem;
+      border-top: 3px solid var(--accent);
+      border-bottom: 1px solid var(--panel-border);
+      background: #ffffff;
     }
 
-    .summary-card {
-      background: linear-gradient(135deg, #f5f5f5 0%, #f9f9f9 100%);
-      padding: 1.5rem;
-      border-radius: 6px;
-      text-align: center;
-      border-left: 4px solid var(--accent);
-    }
-
-    .summary-card.good {
-      border-left-color: var(--accent);
-    }
-
-    .summary-card.medium {
-      border-left-color: #f57c00;
-    }
-
-    .summary-card.poor {
-      border-left-color: #c62828;
-    }
-
-    .summary-card label {
-      display: block;
-      font-size: 0.85rem;
-      color: #666;
-      text-transform: uppercase;
-      letter-spacing: 0.01em;
-      margin-bottom: 0.5rem;
-    }
-
-    .summary-card .value {
-      font-size: 2.5rem;
-      font-weight: 700;
-      color: #1a1a2e;
-    }
-
-    .summary-card .sublabel {
-      font-size: 0.8rem;
-      color: #999;
-      margin-top: 0.5rem;
-    }
-
-    .section {
-      background: #fff;
-      padding: 2rem;
-      border-radius: 8px;
-      margin-bottom: 2rem;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-
-    .section-title {
+    .app-brand {
+      min-width: 0;
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      margin-bottom: 1.5rem;
-      padding-bottom: 1rem;
-      border-bottom: 2px solid #e0e0e0;
-      gap: 1rem;
-    }
-
-    .section-title h3 {
-      font-size: 1.5rem;
-      color: #16213e;
-    }
-
-    .section-score {
-      font-size: 1.8rem;
-      font-weight: 700;
-      color: var(--accent);
-      background: var(--accent-bg-soft);
-      padding: 0.5rem 1rem;
-      border-radius: 6px;
-      white-space: nowrap;
-    }
-
-    .section-score.good {
-      background: var(--accent-bg-soft-strong);
-      color: var(--accent);
-    }
-
-    .section-score.medium {
-      background: #ffe0b2;
-      color: #e65100;
-    }
-
-    .section-score.poor {
-      background: #ffcdd2;
-      color: #b71c1c;
-    }
-
-    .subsection {
-      margin-bottom: 2rem;
-    }
-
-    .subsection-title {
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: #1a1a2e;
-      margin-bottom: 1rem;
-    }
-
-    .checkbox-list {
-      display: flex;
-      flex-direction: column;
-      gap: 0.8rem;
-      padding-left: 1rem;
-    }
-
-    .checkbox-item {
-      display: flex;
-      align-items: flex-start;
       gap: 0.75rem;
     }
 
-    .question-state-control {
+    .brand-mark {
+      width: 2.25rem;
+      height: 2.25rem;
       display: inline-flex;
-      gap: 0.35rem;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      border-radius: var(--radius-md);
+      background: var(--text);
+      color: #ffffff;
+      font-size: 1rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .app-title {
+      margin: 0;
+      font-family: sans-serif;
+      font-size: 1.25rem;
+      line-height: 1.2;
+      letter-spacing: -0.015em;
+    }
+
+    .app-subtitle {
+      margin: 0.16rem 0 0;
+      max-width: 72ch;
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.35;
+    }
+
+    .app-toolbar {
+      display: flex;
       flex-wrap: wrap;
-      min-width: 176px;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 0.75rem;
     }
 
-    .state-option {
-      border: 1px solid #cfd8dc;
-      background: #fff;
-      color: #455a64;
-      border-radius: 999px;
-      padding: 0.35rem 0.7rem;
-      font-size: 0.85rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease;
+    .toolbar-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.4rem;
     }
 
-    .state-option:hover {
-      border-color: #90a4ae;
+    .toolbar-group + .toolbar-group {
+      padding-left: 0.75rem;
+      border-left: 1px solid var(--panel-border);
     }
 
-    .state-option.is-active[data-state="unset"] {
-      background: #eceff1;
-      border-color: #b0bec5;
-      color: #37474f;
+    .save-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
     }
 
-    .state-option.is-active[data-state="yes"] {
-      background: #dff7e8;
-      border-color: #8dd3a7;
+    .save-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.35rem 0.55rem;
+      border: 1px solid var(--panel-border);
+      border-radius: var(--radius-md);
+      background: #ffffff;
+      color: var(--success);
+      font-size: 0.76rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .save-status::before {
+      width: 0.48rem;
+      height: 0.48rem;
+      border-radius: 50%;
+      background: currentColor;
+      content: "";
+    }
+
+    .save-status.is-unsaved {
+      border-color: rgba(181, 71, 8, 0.22);
+      background: #fffaf5;
+      color: var(--warning);
+    }
+
+    .workspace {
+      flex: 1;
+      width: 100%;
+      max-width: 1920px;
+      margin: 0 auto;
+      min-height: 0;
+      padding: 1rem 1.25rem 1.25rem;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 1rem;
+    }
+
+    .status-bar {
+      padding: 0.85rem 1rem;
+      border: 1px solid var(--accent-border-soft);
+      border-radius: var(--radius-md);
+      background: #ffffff;
       color: var(--accent-text);
     }
 
-    .state-option.is-active[data-state="no"] {
-      background: #fde3e3;
-      border-color: #ef9a9a;
-      color: #b71c1c;
+    .status-bar.is-hidden { display: none; }
+
+    .workspace-grid {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(360px, 1.08fr) minmax(360px, 0.92fr);
+      gap: 0.85rem;
     }
 
-    .checkbox-item label {
+    .panel {
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid var(--panel-border);
+      border-radius: var(--radius-xl);
+      background: var(--panel);
+      overflow: hidden;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid var(--panel-border);
+      background: #ffffff;
+    }
+
+    .panel-title {
+      margin: 0;
+      font-family: sans-serif;
+      font-size: 1.05rem;
+      letter-spacing: -0.01em;
+    }
+
+    .panel-copy {
+      margin: 0.15rem 0 0;
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    .panel-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 0.5rem;
+    }
+
+    .panel-body {
+      min-height: 0;
       flex: 1;
+      overflow: auto;
+      padding: 0.85rem;
+      background: #f8fafc;
+    }
+
+    .footer {
+      padding: 0 1.25rem 1rem;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .btn {
+      appearance: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      min-height: 2.25rem;
+      padding: 0.52rem 0.78rem;
+      border-radius: var(--radius-md);
+      border: 1px solid transparent;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease;
+      white-space: nowrap;
       user-select: none;
-      color: #1a1a2e;
     }
 
-    .checkbox-item[data-state="yes"] label {
-      color: var(--accent);
-      font-weight: 500;
+    .btn:disabled { cursor: not-allowed; opacity: 0.55; }
+    .btn-primary { color: #fff; background: var(--accent); border-color: var(--accent); }
+    .btn-primary:hover:not(:disabled) { background: var(--accent-dark); }
+    .btn-secondary { color: var(--text); background: #fff; border-color: var(--panel-border); }
+    .btn-secondary:hover:not(:disabled) { border-color: var(--panel-border-strong); background: #f8fafc; }
+    .btn-emphasis { color: #ffffff; background: var(--text); border-color: var(--text); }
+    .btn-emphasis:hover:not(:disabled) { background: #2d3a4d; border-color: #2d3a4d; }
+    .btn-save.has-unsaved-changes { box-shadow: 0 0 0 3px rgba(181, 71, 8, 0.12); }
+    .btn-save.has-unsaved-changes::before {
+      width: 0.5rem;
+      height: 0.5rem;
+      border-radius: 50%;
+      background: #fdb022;
+      content: "";
+    }
+    .btn-ghost { color: #415168; background: #ffffff; border-color: var(--panel-border); }
+    .btn-danger { color: var(--danger); background: var(--danger-soft); border-color: rgba(180, 35, 24, 0.16); }
+    .btn-small { min-height: 2rem; padding: 0.38rem 0.62rem; font-size: 0.8rem; }
+    .icon-button { min-width: 2.2rem; padding-inline: 0.7rem; }
+    .btn:focus-visible,
+    .state-option:focus-visible,
+    .export-menu summary:focus-visible,
+    .export-menu-item:focus-visible {
+      outline: 3px solid var(--accent-shadow);
+      outline-offset: 2px;
     }
 
-    .checkbox-item[data-state="no"] label {
-      color: #b71c1c;
-      font-weight: 500;
+    .builder-top {
+      display: grid;
+      gap: 1rem;
+      margin-bottom: 1rem;
     }
 
-    .comment-box {
-      margin-top: 1.5rem;
-      padding-top: 1rem;
-      border-top: 1px solid #e0e0e0;
+    .builder-card, .section-card, .subsection-card, .preview-card, .summary-card, .empty-state {
+      border: 1px solid var(--panel-border);
+      border-radius: var(--radius-lg);
+      background: var(--panel-strong);
     }
 
-    .comment-textarea {
-      width: 100%;
-      min-height: 80px;
-      padding: 0.75rem;
-      border: 1px solid #ddd;
+    .builder-intro {
+      padding: 1rem 1.05rem;
+      background: #f8fafc;
+    }
+
+    .builder-intro h3, .empty-state h3, .empty-state h4 {
+      margin: 0;
+      font-family: sans-serif;
+      letter-spacing: -0.01em;
+    }
+
+    .builder-intro p, .empty-state p { margin: 0.4rem 0 0; color: var(--muted); line-height: 1.55; }
+
+    .card-header, .section-header, .subsection-header, .preview-section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 0.9rem;
+    }
+
+    .card-header {
+      align-items: center;
+      padding: 0.8rem 0.9rem;
+      border-bottom: 1px solid var(--panel-border);
+      background: #ffffff;
+    }
+
+    .card-header-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 0.45rem;
+    }
+
+    .builder-card-body, .section-body, .subsection-body {
+      padding: 0.9rem;
+      display: grid;
+      gap: 0.8rem;
+    }
+
+    .card-title {
+      margin: 0;
+      font-family: sans-serif;
+      font-size: 0.98rem;
+      letter-spacing: -0.01em;
+    }
+
+    .eyebrow {
+      margin: 0 0 0.25rem;
+      color: var(--muted);
+      font-size: 0.76rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 1.75rem;
+      padding: 0.2rem 0.5rem;
       border-radius: 4px;
-      font-family: inherit;
-      font-size: 0.95rem;
-      resize: vertical;
-      color: #1a1a2e;
+      border: 1px solid var(--panel-border);
+      background: #f8fafc;
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
     }
 
-    .comment-textarea:focus {
+    .field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; }
+    .field-grid--stacked { grid-template-columns: 1fr; }
+    .field { display: grid; gap: 0.38rem; }
+    .field label, .comment-wrap label {
+      color: #475569;
+      font-size: 0.74rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .field-help {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.45;
+    }
+
+    .field input, .field textarea, .field select, .question-input, .comment-textarea {
+      width: 100%;
+      border: 1px solid var(--panel-border);
+      border-radius: 5px;
+      background: #fff;
+      color: var(--text);
+      padding: 0.64rem 0.72rem;
+      transition: border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+    }
+
+    .field textarea, .comment-textarea { min-height: 84px; resize: vertical; line-height: 1.5; }
+    .field input[type="color"] { padding: 0.3rem; min-height: 40px; }
+    .field input:focus, .field textarea:focus, .field select:focus, .question-input:focus, .comment-textarea:focus {
       outline: none;
       border-color: var(--accent);
       box-shadow: 0 0 0 3px var(--accent-shadow);
     }
 
-    .comment-textarea::placeholder {
-      color: #999;
+    .section-stack, .subsection-stack, .question-stack { display: grid; gap: 0.7rem; }
+    .section-card { overflow: hidden; border-left: 3px solid var(--accent); }
+    .section-card + .section-card { margin-top: 1rem; }
+    .section-header {
+      padding: 0.8rem 0.85rem;
+      border-bottom: 1px solid var(--panel-border);
+      background: #f5f7fa;
     }
-
-    .empty-state {
-      background: #fff;
-      padding: 2rem;
-      border-radius: 8px;
-      margin-bottom: 2rem;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-      text-align: center;
-    }
-
-    .empty-state h2 {
-      color: #16213e;
-      margin-bottom: 0.75rem;
-    }
-
-    .empty-state p {
-      color: #666;
-      max-width: 720px;
-      margin: 0 auto 1rem;
-    }
-
-    .empty-state .actions {
-      display: flex;
-      gap: 0.75rem;
-      justify-content: center;
-      flex-wrap: wrap;
-      margin-top: 1rem;
-    }
-
-    .status-bar {
-      margin-bottom: 1rem;
-      padding: 0.9rem 1rem;
-      background: #eef6f0;
-      color: var(--accent-text);
-      border: 1px solid var(--accent-border-soft);
-      border-radius: 8px;
-    }
-
-    .hidden {
-      display: none !important;
-    }
-
-    .progress-bar {
+    .structure-name-field { flex: 1; min-width: 0; }
+    .structure-name-input {
       width: 100%;
-      height: 8px;
-      background: #e0e0e0;
+      padding: 0.58rem 0.68rem;
+      border: 1px solid var(--panel-border);
+      border-radius: 5px;
+      background: #fff;
+      font-weight: 700;
+    }
+    .structure-name-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-shadow);
+    }
+    .section-actions, .subsection-actions, .question-actions { display: flex; flex-wrap: wrap; gap: 0.3rem; justify-content: flex-end; }
+    .section-body, .subsection-body { padding: 0.85rem; display: grid; gap: 0.8rem; }
+    .subsection-card { overflow: hidden; }
+    .subsection-header {
+      padding: 0.7rem 0.75rem;
+      border-bottom: 1px solid var(--panel-border);
+      background: #ffffff;
+    }
+    .question-list { display: grid; gap: 0.5rem; }
+    .question-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 0.55rem;
+      align-items: center;
+      padding: 0.55rem;
+      border: 1px solid var(--panel-border);
+      border-radius: var(--radius-md);
+      background: #ffffff;
+    }
+    .comment-wrap { display: grid; gap: 0.4rem; }
+    .section-footer, .subsection-footer { padding: 0 0.85rem 0.85rem; }
+    .empty-state { padding: 1.15rem; text-align: left; }
+    .empty-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.85rem; }
+
+    .preview-shell { display: grid; gap: 0.85rem; }
+    .preview-card { overflow: hidden; }
+    .preview-header {
+      padding: 1rem;
+      border-bottom: 1px solid var(--panel-border);
+      background: #ffffff;
+    }
+    .preview-header h2 {
+      margin: 0.15rem 0 0;
+      font-family: sans-serif;
+      font-size: 1.38rem;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+    }
+    .preview-header p { margin: 0.45rem 0 0; color: var(--muted); line-height: 1.55; }
+    .preview-top-fields { padding: 0.9rem; display: grid; gap: 0.8rem; }
+    .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.6rem; }
+    .summary-card {
+      padding: 0.8rem;
+      border-top: 3px solid var(--accent);
+    }
+    .summary-card label {
+      display: block;
+      margin-bottom: 0.45rem;
+      color: var(--muted);
+      font-size: 0.76rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .summary-value { font-size: 1.55rem; font-weight: 800; line-height: 1; }
+    .summary-note { margin-top: 0.35rem; color: var(--muted); font-size: 0.8rem; }
+    .preview-section { padding: 0; border-left: 0; }
+    .preview-section + .preview-section { border-top: 1px solid var(--panel-border); }
+    .preview-section-header {
+      align-items: center;
+      justify-content: flex-start;
+      margin: 0;
+      padding: 0.8rem 0.9rem;
+      border-bottom: 1px solid var(--panel-border);
+      background: #f5f7fa;
+    }
+    .preview-section-header h3 {
+      margin: 0;
+      font-family: sans-serif;
+      font-size: 1.02rem;
+      letter-spacing: -0.01em;
+    }
+    .preview-subsection { padding: 0.9rem; border: 0; border-radius: 0; box-shadow: none; }
+    .preview-subsection + .preview-subsection { margin-top: 0; border-top: 1px solid var(--panel-border); }
+    .preview-subsection-header { margin-bottom: 0.55rem; }
+    .preview-subsection-header h4 { margin: 0; font-size: 0.98rem; color: #263449; }
+    .preview-subsection-description {
+      margin: 0 0 0.7rem;
+      color: var(--muted);
+      line-height: 1.55;
+      white-space: pre-wrap;
+    }
+    .subsection-note { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #e7ebf0; }
+    .preview-question {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 0.65rem;
+      align-items: start;
+      padding: 0.65rem 0.7rem;
+      border: 1px solid var(--panel-border);
+      border-radius: 5px;
+      background: #ffffff;
+    }
+    .preview-question + .preview-question { margin-top: 0.5rem; }
+    .preview-question .question-label { margin: 0; font-size: 0.92rem; font-weight: 650; line-height: 1.45; }
+    .preview-question .question-label::before { display: inline-block; width: 0.42rem; height: 0.42rem; margin-right: 0.55rem; background: var(--accent); content: ""; vertical-align: 0.08rem; }
+    .state-control { display: inline-flex; gap: 0.35rem; flex-wrap: wrap; justify-content: flex-end; }
+    .state-option {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.32rem 0.58rem;
       border-radius: 4px;
-      overflow: hidden;
-      margin-top: 0.5rem;
+      border: 1px solid var(--panel-border);
+      background: #fff;
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .state-option.is-active[data-state-value="unset"] { background: #eef2f7; color: #344054; border-color: #cbd5e1; }
+    .state-option.is-active[data-state-value="yes"] { background: rgba(2, 122, 72, 0.13); color: var(--success); border-color: rgba(2, 122, 72, 0.24); }
+    .state-option.is-active[data-state-value="no"] { background: rgba(180, 35, 24, 0.13); color: var(--danger); border-color: rgba(180, 35, 24, 0.22); }
+    .preview-readonly input,
+    .preview-readonly textarea,
+    .preview-readonly .state-option { cursor: default; }
+    .preview-readonly input:disabled,
+    .preview-readonly textarea:disabled {
+      opacity: 1;
+      background: #f8fafc;
+      color: #475569;
+      -webkit-text-fill-color: #475569;
+    }
+    .preview-empty { padding: 1.15rem; }
+
+    .hidden { display: none !important; }
+    .file-input { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+
+    @media (max-width: 1180px) {
+      .workspace-grid { grid-template-columns: 1fr; }
     }
 
-    .progress-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--accent), var(--accent-dark));
-      transition: width 0.3s ease;
+    @media (max-width: 860px) {
+      .app-header, .panel-header, .section-header, .subsection-header { flex-direction: column; align-items: stretch; }
+      .app-toolbar, .panel-actions, .section-actions, .subsection-actions, .question-actions { justify-content: flex-start; }
+      .toolbar-group + .toolbar-group { padding-left: 0; border-left: 0; }
+      .field-grid, .summary-grid { grid-template-columns: 1fr; }
+      .question-row, .preview-question { grid-template-columns: 1fr; }
+      .state-control { justify-content: flex-start; }
     }
 
-    footer {
-      background: #4a4a4a;
-      color: #fff;
-      padding: 2rem 1.5rem;
-      text-align: center;
-      margin-top: 3rem;
-      font-size: 0.9rem;
-    }
-
-    @media (max-width: 768px) {
-      header h1 {
-        font-size: 1.4rem;
-      }
-
-      main {
-        padding: 1rem;
-      }
-
-      .topbar {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      .topbar-left {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      .topbar-right {
-        flex-direction: column;
-      }
-
-      .btn {
-        width: 100%;
-        justify-content: center;
-      }
-
-      .summary-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .section {
-        padding: 1.5rem;
-      }
-
-      .section-title {
-        flex-direction: column;
-        align-items: flex-start;
-      }
+    @media (max-width: 560px) {
+      .app-header { align-items: stretch; padding: 0.75rem; }
+      .app-toolbar, .toolbar-group, .save-group { width: 100%; }
+      .toolbar-group .btn, .save-group .btn { flex: 1; }
+      .save-status { justify-content: center; }
+      .workspace { padding: 0.75rem; }
+      .panel-body { padding: 0.65rem; }
+      .preview-section-header { align-items: center; flex-direction: row; }
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1 id="page-title">Kinjuson</h1>
-    <p class="subtitle" id="page-subtitle">Machine structures, human inputs</p>
+  <header class="app-header">
+    <div class="app-brand">
+      <span class="brand-mark" aria-hidden="true">K</span>
+      <div>
+        <h1 class="app-title">Kinjuson Editor</h1>
+        <p class="app-subtitle">Build, preview, and export structured forms.</p>
+      </div>
+    </div>
+    <nav class="app-toolbar" aria-label="Editor actions">
+      <div class="toolbar-group">
+        <button class="btn btn-secondary" id="btn-new-blank" type="button">New</button>
+        <button class="btn btn-secondary" id="btn-load-example" type="button">Example</button>
+        <button class="btn btn-secondary" id="btn-load-json" type="button">Load</button>
+      </div>
+      <div class="toolbar-group">
+        <div class="save-group">
+          <span class="save-status is-unsaved" id="editor-save-status" aria-live="polite">Unsaved</span>
+          <button class="btn btn-primary btn-save has-unsaved-changes" id="btn-save-json" type="button">Save changes</button>
+        </div>
+        <button class="btn btn-emphasis" id="btn-export-html" type="button">Export HTML</button>
+      </div>
+    </nav>
   </header>
 
-  <main>
-    <div class="topbar">
-      <div class="topbar-left">
-        <div class="project-info">
-          <label for="project-name" id="project-name-label">Form name</label>
-          <input type="text" id="project-name" placeholder="Enter form name...">
-        </div>
-        <div class="project-info">
-          <label for="audit-date" id="audit-date-label">processing date</label>
-          <input type="date" id="audit-date">
-        </div>
-      </div>
-      <div class="topbar-right">
-        <button class="btn btn-primary" id="btn-import-json" type="button">Import JSON</button>
-        <button class="btn btn-secondary" id="btn-export-json" type="button" disabled>Export JSON</button>
-        <button class="btn btn-secondary btn-small" id="btn-clear" type="button" disabled>Clear</button>
-      </div>
-    </div>
+  <main class="workspace">
+    <div id="status-bar" class="status-bar is-hidden" aria-live="polite"></div>
 
-    <input type="file" id="json-file-input" class="hidden" accept=".json,application/json">
-
-    <div class="status-bar hidden" id="status-bar"></div>
-
-    <div class="empty-state" id="empty-state">
-      <h2>Import JSON data first</h2>
-      <p>The app starts without any data. Import an empty template or a work-in-progress form in JSON format, then edit the data and export it again.</p>
-      <div class="actions">
-        <button class="btn btn-primary" id="btn-import-json-empty" type="button">Choose JSON file</button>
-      </div>
-    </div>
-
-    <div class="summary hidden" id="summary">
-      <h2>Overall form score</h2>
-      <div class="summary-grid">
-        <div class="summary-card" id="overall-score-card">
-          <label>Overall score</label>
-          <div class="value" id="overall-score">0</div>
-          <div class="sublabel">out of 100%</div>
-          <div class="progress-bar">
-            <div class="progress-fill" id="overall-progress" style="width: 0%"></div>
+    <div class="workspace-grid">
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">Form Builder</h2>
+            <p class="panel-copy">Edit the JSON structure directly through the visual controls on this side.</p>
           </div>
         </div>
-        <div class="summary-card">
-          <label>Answered</label>
-          <div class="value" id="answered-ratio">0/0</div>
-          <div class="sublabel">answered / total questions</div>
+        <div class="panel-body">
+          <div id="builder-root"></div>
         </div>
-        <div class="summary-card">
-          <label>Yes</label>
-          <div class="value" id="total-yes">0</div>
-          <div class="sublabel">positive answers</div>
-        </div>
-        <div class="summary-card">
-          <label>Completion rate</label>
-          <div class="value" id="completion-percent">0%</div>
-          <div class="sublabel">form completion</div>
-        </div>
-      </div>
-    </div>
+      </section>
 
-    <div id="sections-container"></div>
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">Live Preview</h2>
+            <p class="panel-copy">This read-only preview shows the form that will be exported into the standalone HTML file.</p>
+          </div>
+          <div class="panel-actions">
+            <span class="panel-copy">Make changes in the builder; the preview stays in sync.</span>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div id="preview-root" class="preview-readonly"></div>
+        </div>
+      </section>
+    </div>
   </main>
 
-  <footer>
-    <p>Kinjuson - an interactive tool for analysis, goals, and structured assessments</p>
+  <footer class="footer">
+    Kinjuson - a lightweight editor for structured forms, JSON workflows, and self-contained HTML exports.
   </footer>
+
+  <input type="file" id="json-file-input" class="file-input" accept=".json,application/json">
 
   <script>
     (function() {
       "use strict";
 
-      let auditData = null;
-      let checkStates = {};
-      let commentStates = {};
-      let formMetadata = {};
-      let themeColor = "";
-      const defaultHeaderTitle = "Kinjuson";
-      const defaultHeaderSubtitle = "Machine structures, human inputs";
-      const defaultFormMetadata = {
-        nameLabel: "Form name",
-        namePlaceholder: "Enter form name...",
-        dateLabel: "processing date"
+      const APP_NAME = "Kinjuson";
+      const APP_VERSION = 1;
+      const DEFAULT_FORM_TITLE = "Untitled form";
+      const DEFAULT_FORM_DESCRIPTION = "Start building a structured form.";
+      const DEFAULT_NAME_LABEL = "Form name";
+      const DEFAULT_NAME_PLACEHOLDER = "Enter form name...";
+      const DEFAULT_DATE_LABEL = "Review date";
+      const DEFAULT_THEME_COLOR = "#1d6fd6";
+      const SCRIPT_CLOSE = "<" + "/script>";
+      const STYLE_CLOSE = "<" + "/style>";
+
+      const EXAMPLE_DRAFT = {
+        app: "Kinjuson",
+        version: 1,
+        form: {
+          title: "Website Launch Readiness",
+          description: "A simple example form for checking whether a website is ready to launch.",
+          task: "Review the completed form, summarize the main blockers, and recommend the next actions.",
+          themeColor: "#1d6fd6",
+          nameLabel: "Project",
+          namePlaceholder: "Enter project name...",
+          name: "Marketing Site Refresh",
+          dateLabel: "Review date",
+          date: "2026-03-26"
+        },
+        sections: [
+          {
+            id: "1",
+            title: "Content",
+            subsections: [
+              {
+                title: "Core pages",
+                description: "Review the readiness and approval status of the primary website pages.",
+                note: "Homepage is done, pricing page still needs legal review.",
+                questions: [
+                  { text: "Homepage copy is final", state: "yes", checked: true },
+                  { text: "Pricing page has been approved", state: "no", checked: false },
+                  { text: "Contact page includes current team details", state: "unset", checked: false }
+                ]
+              }
+            ]
+          },
+          {
+            id: "2",
+            title: "Quality Checks",
+            subsections: [
+              {
+                title: "Pre-launch review",
+                description: "Confirm the essential quality checks have been completed before launch.",
+                note: "",
+                questions: [
+                  { text: "Forms submit successfully", state: "yes", checked: true },
+                  { text: "Mobile layout has been reviewed", state: "yes", checked: true },
+                  { text: "Analytics tracking is verified", state: "unset", checked: false }
+                ]
+              }
+            ]
+          }
+        ]
       };
-      const defaultThemeColor = "#111111";
+
+      const STANDALONE_CSS = [
+        ":root {",
+        "  --accent: #1d6fd6;",
+        "  --accent-dark: #154b91;",
+        "  --accent-text: #0f172a;",
+        "  --accent-soft: #e7f0fd;",
+        "  --accent-soft-strong: #d8e7fb;",
+        "  --accent-border-soft: rgba(29, 111, 214, 0.22);",
+        "  --accent-shadow: rgba(29, 111, 214, 0.12);",
+        "  --text: #182230;",
+        "  --muted: #66758a;",
+        "  --panel: #ffffff;",
+        "  --panel-border: #d4dbe3;",
+        "  --panel-border-strong: #aeb9c6;",
+        "  --success: #027a48;",
+        "  --warning: #b54708;",
+        "  --danger: #b42318;",
+        "}",
+        "* { box-sizing: border-box; }",
+        "html, body { min-height: 100%; }",
+        "body {",
+        "  margin: 0;",
+        "  font-family: sans-serif;",
+        "  color: var(--text);",
+        "  background: #f4f6f8;",
+        "  line-height: 1.5;",
+        "}",
+        "button, input, textarea, select, summary { font: inherit; color: inherit; }",
+        "button { border: 0; background: none; }",
+        ".standalone-app { min-height: 100vh; display: flex; flex-direction: column; }",
+        ".standalone-header { display: flex; justify-content: space-between; align-items: center; gap: 1.5rem; padding: 0.9rem 1.1rem; border-top: 3px solid var(--accent); border-bottom: 1px solid var(--panel-border); background: #ffffff; }",
+        ".standalone-header h1 { margin: 0; font-family: sans-serif; font-size: 1.25rem; letter-spacing: -0.015em; }",
+        ".standalone-header p { margin: 0.15rem 0 0; color: var(--muted); font-size: 0.84rem; }",
+        ".standalone-toolbar, .save-group { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }",
+        ".save-status { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.55rem; border: 1px solid var(--panel-border); border-radius: 4px; background: #ffffff; color: var(--success); font-size: 0.76rem; font-weight: 700; white-space: nowrap; }",
+        ".save-status::before { width: 0.48rem; height: 0.48rem; border-radius: 50%; background: currentColor; content: ''; }",
+        ".save-status.is-unsaved { border-color: rgba(181, 71, 8, 0.22); background: #fffaf5; color: var(--warning); }",
+        ".btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.45rem; min-height: 2.25rem; padding: 0.52rem 0.78rem; border-radius: 4px; border: 1px solid transparent; cursor: pointer; text-decoration: none; transition: border-color 0.16s ease, background 0.16s ease, color 0.16s ease; }",
+        ".btn-primary { color: #fff; background: var(--accent); border-color: var(--accent); }",
+        ".btn-primary:hover:not(:disabled) { background: var(--accent-dark); }",
+        ".btn-secondary { color: var(--text); background: #fff; border-color: var(--panel-border); }",
+        ".btn-secondary:hover:not(:disabled) { border-color: var(--panel-border-strong); background: #f8fafc; }",
+        ".btn-save.has-unsaved-changes { box-shadow: 0 0 0 3px rgba(181, 71, 8, 0.12); }",
+        ".btn-save.has-unsaved-changes::before { width: 0.5rem; height: 0.5rem; border-radius: 50%; background: #fdb022; content: ''; }",
+        ".export-menu { position: relative; }",
+        ".export-menu summary { list-style: none; }",
+        ".export-menu summary::-webkit-details-marker { display: none; }",
+        ".export-menu summary::after { width: 0; height: 0; border-top: 0.34rem solid currentColor; border-right: 0.3rem solid transparent; border-left: 0.3rem solid transparent; content: ''; transition: transform 0.16s ease; }",
+        ".export-menu[open] summary::after { transform: rotate(180deg); }",
+        ".export-menu-panel { position: absolute; top: calc(100% + 0.4rem); right: 0; z-index: 10; min-width: 10rem; padding: 0.3rem; border: 1px solid var(--panel-border); border-radius: 4px; background: #fff; box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12); }",
+        ".export-menu-item { width: 100%; padding: 0.65rem 0.75rem; border-radius: 4px; cursor: pointer; text-align: left; font-weight: 700; }",
+        ".export-menu-item:hover { background: var(--accent-soft); color: var(--accent-text); }",
+        ".btn:focus-visible, .state-option:focus-visible, .export-menu summary:focus-visible, .export-menu-item:focus-visible { outline: 3px solid var(--accent-shadow); outline-offset: 2px; }",
+        ".standalone-main { padding: 1rem; flex: 1; }",
+        ".form-shell { display: grid; gap: 0.85rem; max-width: 1120px; margin: 0 auto; }",
+        ".preview-shell { display: grid; gap: 0.85rem; }",
+        ".form-card, .summary-card, .section-card, .empty-state { border: 1px solid var(--panel-border); border-radius: 5px; background: var(--panel); }",
+        ".preview-header { padding: 1rem; border-bottom: 1px solid var(--panel-border); background: #ffffff; }",
+        ".preview-header h2 { margin: 0.15rem 0 0; font-family: sans-serif; font-size: 1.35rem; }",
+        ".preview-header p { margin: 0.4rem 0 0; color: var(--muted); line-height: 1.55; }",
+        ".preview-top-fields { padding: 0.9rem; display: grid; gap: 0.8rem; }",
+        ".field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; }",
+        ".field { display: grid; gap: 0.35rem; }",
+        ".field label, .comment-wrap label { color: var(--muted); font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }",
+        ".field input, .comment-textarea { width: 100%; padding: 0.64rem 0.72rem; border: 1px solid var(--panel-border); border-radius: 4px; background: #fff; }",
+        ".field input:focus, .comment-textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-shadow); }",
+        ".summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.6rem; }",
+        ".summary-card { padding: 0.8rem; border-top: 3px solid var(--accent); }",
+        ".summary-card label { display: block; margin-bottom: 0.45rem; color: var(--muted); font-size: 0.76rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }",
+        ".summary-value { font-size: 1.55rem; font-weight: 800; line-height: 1; }",
+        ".summary-note { margin-top: 0.35rem; color: var(--muted); font-size: 0.8rem; }",
+        ".preview-section { padding: 0; overflow: hidden; }",
+        ".preview-section + .preview-section { border-top: 1px solid var(--panel-border); }",
+        ".preview-section-header { display: flex; align-items: center; justify-content: flex-start; gap: 0.75rem; padding: 0.8rem 0.9rem; border-bottom: 1px solid var(--panel-border); background: #f5f7fa; }",
+        ".preview-section-header h3 { margin: 0; font-family: sans-serif; font-size: 1.02rem; }",
+        ".preview-subsection { padding: 0.9rem; }",
+        ".preview-subsection + .preview-subsection { border-top: 1px solid var(--panel-border); }",
+        ".preview-subsection-header { margin-bottom: 0.55rem; }",
+        ".preview-subsection-header h4 { margin: 0; font-size: 0.98rem; color: #263449; }",
+        ".preview-subsection-description { margin: 0 0 0.7rem; color: var(--muted); line-height: 1.55; white-space: pre-wrap; }",
+        ".subsection-note { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #e7ebf0; }",
+        ".preview-question { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.65rem; align-items: start; padding: 0.65rem 0.7rem; border: 1px solid var(--panel-border); border-radius: 4px; background: #ffffff; }",
+        ".preview-question + .preview-question { margin-top: 0.5rem; }",
+        ".preview-question .question-label { margin: 0; font-size: 0.92rem; font-weight: 650; line-height: 1.45; }",
+        ".preview-question .question-label::before { display: inline-block; width: 0.42rem; height: 0.42rem; margin-right: 0.55rem; background: var(--accent); content: ''; vertical-align: 0.08rem; }",
+        ".state-control { display: inline-flex; gap: 0.35rem; flex-wrap: wrap; justify-content: flex-end; }",
+        ".state-option { display: inline-flex; align-items: center; justify-content: center; padding: 0.32rem 0.58rem; border-radius: 4px; border: 1px solid var(--panel-border); background: #fff; color: var(--muted); font-size: 0.8rem; font-weight: 700; cursor: pointer; }",
+        ".state-option.is-active[data-state-value='unset'] { background: #eef2f7; color: #344054; border-color: #cbd5e1; }",
+        ".state-option.is-active[data-state-value='yes'] { background: rgba(2, 122, 72, 0.13); color: var(--success); border-color: rgba(2, 122, 72, 0.24); }",
+        ".state-option.is-active[data-state-value='no'] { background: rgba(180, 35, 24, 0.13); color: var(--danger); border-color: rgba(180, 35, 24, 0.22); }",
+        ".preview-empty { padding: 1.15rem; }",
+        ".footer { padding: 0 1.25rem 1rem; color: var(--muted); font-size: 0.88rem; }",
+        "@media (max-width: 860px) { .field-grid { grid-template-columns: 1fr; } .preview-question { grid-template-columns: 1fr; } .standalone-header { flex-direction: column; align-items: stretch; } .standalone-toolbar { justify-content: flex-start; } .export-menu-panel { right: auto; left: 0; } .state-control { justify-content: flex-start; } }",
+        "@media (max-width: 560px) { .standalone-header, .standalone-main { padding: 0.75rem; } .standalone-toolbar, .save-group { width: 100%; } .save-group .btn, .export-menu, .export-menu summary { flex: 1; } .export-menu summary { width: 100%; } .save-status { justify-content: center; } .summary-grid { grid-template-columns: 1fr 1fr; } .preview-section-header { align-items: center; } }"
+      ].join("\n");
+
+      const STANDALONE_RUNTIME_SOURCE = [
+        "(function() {",
+        "  'use strict';",
+        "  const root = document.getElementById('standalone-root');",
+        "  const dataEl = document.getElementById('kinjuson-data');",
+        "  const saveButton = document.getElementById('standalone-save-progress');",
+        "  const saveStatus = document.getElementById('standalone-save-status');",
+        "  const exportMenu = document.getElementById('standalone-export-menu');",
+        "  const exportJsonButton = document.getElementById('standalone-export-json');",
+        "  const exportMarkdownTableButton = document.getElementById('standalone-export-markdown-table');",
+        "  if (!root || !dataEl) { return; }",
+        "  const DEFAULT_THEME_COLOR = '#1d6fd6';",
+        "  let draft = JSON.parse(dataEl.textContent || '{}');",
+        "  let dirty = false;",
+        "  if (!draft.form) { draft.form = {}; }",
+        "  if (!Array.isArray(draft.sections)) { draft.sections = []; }",
+        "  applyThemeColor(draft.form.themeColor || DEFAULT_THEME_COLOR);",
+        "  bindEvents();",
+        "  updateSummary();",
+        "  updateSaveState();",
+        "  function bindEvents() {",
+        "    root.addEventListener('input', onFieldEvent);",
+        "    root.addEventListener('change', onFieldEvent);",
+        "    root.addEventListener('click', onClick);",
+        "    if (saveButton) { saveButton.addEventListener('click', saveProgress); }",
+        "    if (exportJsonButton) { exportJsonButton.addEventListener('click', exportJSON); }",
+        "    if (exportMarkdownTableButton) { exportMarkdownTableButton.addEventListener('click', exportMarkdownTable); }",
+        "  }",
+        "  function onFieldEvent(event) {",
+        "    const target = event.target.closest('[data-path]');",
+        "    if (!target || !root.contains(target)) { return; }",
+        "    const path = target.dataset.path;",
+        "    setDraftValue(path, readFieldValue(target));",
+        "    setDirty(true);",
+        "    if (path === 'form.themeColor') { applyThemeColor(draft.form.themeColor || DEFAULT_THEME_COLOR); }",
+        "    if (path.endsWith('.state')) { syncStateControls(path, getStateValue(path)); updateSummary(); }",
+        "  }",
+        "  function onClick(event) {",
+        "    const button = event.target.closest('[data-state-path] [data-state-value]');",
+        "    if (!button || !root.contains(button)) { return; }",
+        "    const control = button.closest('[data-state-path]');",
+        "    const path = control && control.dataset.statePath;",
+        "    if (!path) { return; }",
+        "    const state = button.dataset.stateValue;",
+        "    setDraftValue(path, state);",
+        "    setDirty(true);",
+        "    syncStateControls(path, state);",
+        "    updateSummary();",
+        "  }",
+        "  function saveProgress() {",
+        "    const baseName = sanitizeFileName((draft.form && draft.form.title) || (draft.form && draft.form.name) || 'kinjuson_form');",
+        "    downloadFile(buildSavedHtml(), baseName + '.html', 'text/html;charset=utf-8');",
+        "    setDirty(false);",
+        "  }",
+        "  function buildSavedHtml() {",
+        "    const clone = document.documentElement.cloneNode(true);",
+        "    const clonedRoot = clone.querySelector('#standalone-root');",
+        "    const clonedData = clone.querySelector('#kinjuson-data');",
+        "    const liveFields = root.querySelectorAll('[data-path]');",
+        "    const clonedFields = clonedRoot ? clonedRoot.querySelectorAll('[data-path]') : [];",
+        "    liveFields.forEach(function(field, index) {",
+        "      const clonedField = clonedFields[index];",
+        "      if (!clonedField) { return; }",
+        "      if (clonedField.tagName === 'TEXTAREA') {",
+        "        clonedField.textContent = field.value;",
+        "      } else {",
+        "        clonedField.setAttribute('value', field.value);",
+        "      }",
+        "    });",
+        "    if (clonedData) { clonedData.textContent = serializeJsonForScript(serializeDraft(draft)); }",
+        "    const clonedSaveButton = clone.querySelector('#standalone-save-progress');",
+        "    if (clonedSaveButton) {",
+        "      clonedSaveButton.classList.remove('has-unsaved-changes');",
+        "      clonedSaveButton.textContent = 'Save progress';",
+        "      clonedSaveButton.setAttribute('aria-label', 'Progress is saved');",
+        "    }",
+        "    const clonedSaveStatus = clone.querySelector('#standalone-save-status');",
+        "    if (clonedSaveStatus) {",
+        "      clonedSaveStatus.classList.remove('is-unsaved');",
+        "      clonedSaveStatus.textContent = 'Saved';",
+        "    }",
+        "    const clonedExportMenu = clone.querySelector('#standalone-export-menu');",
+        "    if (clonedExportMenu) { clonedExportMenu.removeAttribute('open'); }",
+        "    return '<!DOCTYPE html>\\n' + clone.outerHTML;",
+        "  }",
+        "  function setDirty(nextDirty) {",
+        "    dirty = Boolean(nextDirty);",
+        "    updateSaveState();",
+        "  }",
+        "  function updateSaveState() {",
+        "    if (saveButton) {",
+        "      saveButton.classList.toggle('has-unsaved-changes', dirty);",
+        "      saveButton.textContent = dirty ? 'Save progress *' : 'Save progress';",
+        "      saveButton.setAttribute('aria-label', dirty ? 'Save unsaved progress as HTML' : 'Progress is saved');",
+        "    }",
+        "    if (saveStatus) {",
+        "      saveStatus.classList.toggle('is-unsaved', dirty);",
+        "      saveStatus.textContent = dirty ? 'Unsaved changes' : 'Saved';",
+        "    }",
+        "  }",
+        "  function exportJSON() {",
+        "    const baseName = sanitizeFileName((draft.form && draft.form.title) || (draft.form && draft.form.name) || 'kinjuson_form');",
+        "    downloadFile(JSON.stringify(serializeDraft(draft), null, 2), baseName + '.json', 'application/json;charset=utf-8');",
+        "    closeExportMenu();",
+        "  }",
+        "  function exportMarkdownTable() {",
+        "    const baseName = sanitizeFileName((draft.form && draft.form.title) || (draft.form && draft.form.name) || 'kinjuson_form');",
+        "    downloadFile(buildMarkdownTable(), baseName + '_table.md', 'text/markdown;charset=utf-8');",
+        "    closeExportMenu();",
+        "  }",
+        "  function closeExportMenu() {",
+        "    if (exportMenu) { exportMenu.removeAttribute('open'); }",
+        "  }",
+        "  function buildMarkdownTable() {",
+        "    const lines = buildMarkdownHeader();",
+        "    draft.sections.forEach(function(section, sectionIndex) {",
+        "      const sectionNumber = section.id || String(sectionIndex + 1);",
+        "      lines.push('# ' + formatMarkdownInline(sectionNumber) + '. ' + formatMarkdownInline(section.title || 'Untitled section'));",
+        "      lines.push('');",
+        "      if (!section.subsections.length) {",
+        "        lines.push('_No subsections._');",
+        "        lines.push('');",
+        "        return;",
+        "      }",
+        "      section.subsections.forEach(function(subsection, subsectionIndex) {",
+        "        const subsectionTitle = subsection.title || ('Subsection ' + (subsectionIndex + 1));",
+        "        lines.push('## ' + formatMarkdownInline(sectionNumber) + '.' + String(subsectionIndex + 1) + ' ' + formatMarkdownInline(subsectionTitle));",
+        "        lines.push('');",
+        "        lines.push('**Description:**');",
+        "        lines.push('');",
+        "        lines.push(subsection.description ? formatMarkdownInline(subsection.description) : '_No description provided._');",
+        "        lines.push('');",
+        "        lines.push('| Subsection | Question | Answer |');",
+        "        lines.push('| --- | --- | --- |');",
+        "        if (!subsection.questions.length) {",
+        "          lines.push('| ' + formatTableCell(subsectionTitle) + ' | _No questions._ | - |');",
+        "        } else {",
+        "          subsection.questions.forEach(function(question) {",
+        "            lines.push('| ' + formatTableCell(subsectionTitle) + ' | ' + formatTableCell(question.text || 'Untitled question') + ' | ' + answerLabel(question.state) + ' |');",
+        "          });",
+        "        }",
+        "        lines.push('');",
+        "        lines.push('**Notes:**');",
+        "        lines.push('');",
+        "        lines.push(subsection.note ? formatMarkdownInline(subsection.note) : '_No notes provided._');",
+        "        lines.push('');",
+        "      });",
+        "    });",
+        "    return lines.join('\\n').trimEnd() + '\\n';",
+        "  }",
+        "  function buildMarkdownHeader() {",
+        "    const stats = getStats();",
+        "    const completion = stats.totalQuestions > 0 ? Math.round((stats.totalAnswered / stats.totalQuestions) * 100) : 0;",
+        "    const task = typeof draft.form.task === 'string' && draft.form.task.trim() ? draft.form.task.trim() : '_No task defined._';",
+        "    return [",
+        "      '# ' + formatMarkdownInline(draft.form.title || 'Untitled form'),",
+        "      '',",
+        "      '## Task',",
+        "      '',",
+        "      task,",
+        "      '',",
+        "      '## Response details',",
+        "      '',",
+        "      '- **' + formatMarkdownInline(draft.form.nameLabel || 'Form name') + ':** ' + formatMarkdownInline(draft.form.name || '_Not provided._'),",
+        "      '- **' + formatMarkdownInline(draft.form.dateLabel || 'Review date') + ':** ' + formatMarkdownInline(draft.form.date || '_Not provided._'),",
+        "      '',",
+        "      '## Summary',",
+        "      '',",
+        "      '- **Answered:** ' + stats.totalAnswered + '/' + stats.totalQuestions,",
+        "      '- **Completion:** ' + completion + '%',",
+        "      ''",
+        "    ];",
+        "  }",
+        "  function answerLabel(state) {",
+        "    const normalized = normalizeQuestionState(state);",
+        "    if (normalized === 'yes') { return 'Yes'; }",
+        "    if (normalized === 'no') { return 'No'; }",
+        "    return 'Unset';",
+        "  }",
+        "  function formatMarkdownInline(value) {",
+        "    return String(value == null ? '' : value).replace(/\\r?\\n/g, '<br>');",
+        "  }",
+        "  function formatTableCell(value) {",
+        "    return String(value == null ? '' : value).replace(/\\\\/g, '\\\\\\\\').replace(/\\|/g, '\\\\|').replace(/\\r?\\n/g, '<br>');",
+        "  }",
+        "  function updateSummary() {",
+        "    const stats = getStats();",
+        "    const answeredRatio = root.querySelector('#answered-ratio');",
+        "    const completionPercent = root.querySelector('#completion-percent');",
+        "    if (answeredRatio) { answeredRatio.textContent = String(stats.totalAnswered) + '/' + String(stats.totalQuestions); }",
+        "    if (completionPercent) { completionPercent.textContent = (stats.totalQuestions > 0 ? Math.round((stats.totalAnswered / stats.totalQuestions) * 100) : 0) + '%'; }",
+        "  }",
+        "  function getStats() {",
+        "    let totalQuestions = 0;",
+        "    let totalAnswered = 0;",
+        "    draft.sections.forEach(function(section) {",
+        "      section.subsections.forEach(function(subsection) {",
+        "        subsection.questions.forEach(function(question) {",
+        "          const state = normalizeQuestionState(question.state);",
+        "          totalQuestions += 1;",
+        "          if (state !== 'unset') { totalAnswered += 1; }",
+        "        });",
+        "      });",
+        "    });",
+        "    return { totalQuestions: totalQuestions, totalAnswered: totalAnswered };",
+        "  }",
+        "  function syncStateControls(path, state) {",
+        "    root.querySelectorAll('[data-state-path=\"' + cssEscape(path) + '\"]').forEach(function(control) {",
+        "      control.querySelectorAll('[data-state-value]').forEach(function(btn) {",
+        "        const active = btn.dataset.stateValue === state;",
+        "        btn.classList.toggle('is-active', active);",
+        "        btn.setAttribute('aria-pressed', active ? 'true' : 'false');",
+        "      });",
+        "    });",
+        "  }",
+        "  function setDraftValue(path, value) {",
+        "    const parts = path.split('.');",
+        "    let cursor = draft;",
+        "    for (let index = 0; index < parts.length - 1; index += 1) {",
+        "      cursor = cursor[parts[index]];",
+        "    }",
+        "    const last = parts[parts.length - 1];",
+        "    if (last === 'state') {",
+        "      const state = normalizeQuestionState(value);",
+        "      cursor.state = state;",
+        "      cursor.checked = state === 'yes';",
+        "      return;",
+        "    }",
+        "    cursor[last] = value;",
+        "  }",
+        "  function getStateValue(path) {",
+        "    const parts = path.split('.');",
+        "    let cursor = draft;",
+        "    for (let index = 0; index < parts.length; index += 1) {",
+        "      cursor = cursor[parts[index]];",
+        "      if (!cursor) { break; }",
+        "    }",
+        "    return cursor;",
+        "  }",
+        "  function readFieldValue(target) {",
+        "    return target.value;",
+        "  }",
+        "  function serializeJsonForScript(value) {",
+        "    return JSON.stringify(value).replace(/</g, '\\\\u003c');",
+        "  }",
+        "  function normalizeQuestionState(value) {",
+        "    if (value === true || value === 'yes' || value === 'checked') { return 'yes'; }",
+        "    if (value === false || value === 'no') { return 'no'; }",
+        "    return 'unset';",
+        "  }",
+        "  function serializeDraft(data) {",
+        "    return {",
+        "      app: 'Kinjuson',",
+        "      version: 1,",
+        "      form: {",
+        "        title: data.form.title || 'Untitled form',",
+        "        description: data.form.description || 'Start building a structured form.',",
+        "        task: typeof data.form.task === 'string' ? data.form.task : '',",
+        "        themeColor: normalizeThemeColor(data.form.themeColor) || DEFAULT_THEME_COLOR,",
+        "        nameLabel: data.form.nameLabel || 'Form name',",
+        "        namePlaceholder: data.form.namePlaceholder || 'Enter form name...',",
+        "        name: data.form.name || '',",
+        "        dateLabel: data.form.dateLabel || 'Review date',",
+        "        date: data.form.date || ''",
+        "      },",
+        "      sections: (data.sections || []).map(function(section, sectionIndex) {",
+        "        return {",
+        "          id: String(sectionIndex + 1),",
+        "          title: section.title || '',",
+        "          subsections: (section.subsections || []).map(function(subsection) {",
+        "            return {",
+        "              title: subsection.title || '',",
+        "              description: subsection.description || '',",
+        "              note: subsection.note || '',",
+        "              questions: (subsection.questions || []).map(function(question) {",
+        "                const state = normalizeQuestionState(question.state);",
+        "                return { text: question.text || '', state: state, checked: state === 'yes' };",
+        "              })",
+        "            };",
+        "          })",
+        "        };",
+        "      })",
+        "    };",
+        "  }",
+        "  function sanitizeFileName(value) {",
+        "    return String(value || '').toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '') || 'kinjuson_form';",
+        "  }",
+        "  function downloadFile(content, fileName, mimeType) {",
+        "    const blob = new Blob([content], { type: mimeType });",
+        "    const url = URL.createObjectURL(blob);",
+        "    const link = document.createElement('a');",
+        "    link.href = url;",
+        "    link.download = fileName;",
+        "    document.body.appendChild(link);",
+        "    link.click();",
+        "    link.remove();",
+        "    setTimeout(function() { URL.revokeObjectURL(url); }, 0);",
+        "  }",
+        "  function normalizeThemeColor(value) {",
+        "    const trimmed = typeof value === 'string' ? value.trim() : '';",
+        "    return /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(trimmed) ? trimmed : '';",
+        "  }",
+        "  function applyThemeColor(color) {",
+        "    const normalized = normalizeThemeColor(color) || DEFAULT_THEME_COLOR;",
+        "    const rootStyle = document.documentElement.style;",
+        "    rootStyle.setProperty('--accent', normalized);",
+        "    rootStyle.setProperty('--accent-dark', mixHexColor(normalized, '#000000', 0.18));",
+        "    rootStyle.setProperty('--accent-text', mixHexColor(normalized, '#000000', 0.36));",
+        "    rootStyle.setProperty('--accent-soft', mixHexColor(normalized, '#ffffff', 0.84));",
+        "    rootStyle.setProperty('--accent-soft-strong', mixHexColor(normalized, '#ffffff', 0.76));",
+        "    rootStyle.setProperty('--accent-border-soft', hexToRgba(normalized, 0.22));",
+        "    rootStyle.setProperty('--accent-shadow', hexToRgba(normalized, 0.12));",
+        "  }",
+        "  function mixHexColor(baseHex, mixHex, ratio) {",
+        "    const base = hexToRgb(baseHex);",
+        "    const mix = hexToRgb(mixHex);",
+        "    const clampedRatio = Math.max(0, Math.min(1, ratio));",
+        "    return rgbToHex(",
+        "      Math.round(base.r * (1 - clampedRatio) + mix.r * clampedRatio),",
+        "      Math.round(base.g * (1 - clampedRatio) + mix.g * clampedRatio),",
+        "      Math.round(base.b * (1 - clampedRatio) + mix.b * clampedRatio)",
+        "    );",
+        "  }",
+        "  function hexToRgb(hex) {",
+        "    const normalized = normalizeThemeColor(hex) || DEFAULT_THEME_COLOR;",
+        "    const parts = normalized.length === 4 ? normalized.slice(1).split('').map(function(char) { return char + char; }) : [normalized.slice(1, 3), normalized.slice(3, 5), normalized.slice(5, 7)];",
+        "    return { r: parseInt(parts[0], 16), g: parseInt(parts[1], 16), b: parseInt(parts[2], 16) };",
+        "  }",
+        "  function rgbToHex(r, g, b) {",
+        "    return '#' + [r, g, b].map(function(channel) { return channel.toString(16).padStart(2, '0'); }).join('');",
+        "  }",
+        "  function hexToRgba(hex, alpha) {",
+        "    const rgb = hexToRgb(hex);",
+        "    return 'rgba(' + rgb.r + ', ' + rgb.g + ', ' + rgb.b + ', ' + alpha + ')';",
+        "  }",
+        "  function cssEscape(value) {",
+        "    if (window.CSS && typeof window.CSS.escape === 'function') { return window.CSS.escape(value); }",
+        "    return String(value).replace(/[\"\\\\]/g, '\\\\$&');",
+        "  }",
+        "})();"
+      ].join("\n");
+
+      const builderRoot = document.getElementById("builder-root");
+      const previewRoot = document.getElementById("preview-root");
+      const statusBar = document.getElementById("status-bar");
+      const fileInput = document.getElementById("json-file-input");
+      const saveJsonButton = document.getElementById("btn-save-json");
+      const editorSaveStatus = document.getElementById("editor-save-status");
+
+      let draft = createBlankDraft();
+      let dirty = true;
 
       document.addEventListener("DOMContentLoaded", init);
 
       function init() {
-        bindEvents();
-        updateUIState();
-        updateScores();
+        bindGlobalEvents();
+        bindBuilderEvents();
+        loadDraft(createBlankDraft(), "Started a new blank form.", false);
       }
 
-      function bindEvents() {
-        document.getElementById("btn-import-json").addEventListener("click", openImportDialog);
-        document.getElementById("btn-import-json-empty").addEventListener("click", openImportDialog);
-        document.getElementById("btn-export-json").addEventListener("click", exportToJSON);
-        document.getElementById("btn-clear").addEventListener("click", clearCurrentForm);
-        document.getElementById("json-file-input").addEventListener("change", handleImportFile);
+      function bindGlobalEvents() {
+        document.getElementById("btn-new-blank").addEventListener("click", function() {
+          if (!confirmDiscardIfNeeded()) { return; }
+          loadDraft(createBlankDraft(), "Started a new blank form.", false);
+        });
+
+        document.getElementById("btn-load-example").addEventListener("click", function() {
+          if (!confirmDiscardIfNeeded()) { return; }
+          loadDraft(createExampleDraft(), "Loaded the bundled example form.", false);
+        });
+
+        document.getElementById("btn-load-json").addEventListener("click", function() {
+          if (!confirmDiscardIfNeeded()) { return; }
+          fileInput.value = "";
+          fileInput.click();
+        });
+
+        saveJsonButton.addEventListener("click", saveCurrentJson);
+        document.getElementById("btn-export-html").addEventListener("click", exportCurrentHtml);
+
+        fileInput.addEventListener("change", handleLoadFile);
       }
 
-      function openImportDialog() {
-        document.getElementById("json-file-input").click();
+      function bindBuilderEvents() {
+        builderRoot.addEventListener("input", function(event) {
+          const target = event.target.closest("[data-path]");
+          if (!target || !builderRoot.contains(target)) { return; }
+          handleBuilderFieldChange(target);
+        });
+
+        builderRoot.addEventListener("change", function(event) {
+          const target = event.target.closest("[data-path]");
+          if (!target || !builderRoot.contains(target)) { return; }
+          handleBuilderFieldChange(target);
+        });
+
+        builderRoot.addEventListener("click", function(event) {
+          const actionButton = event.target.closest("[data-action]");
+          if (!actionButton || !builderRoot.contains(actionButton)) { return; }
+          handleAction(actionButton);
+        });
       }
 
-      function handleImportFile(event) {
-        const file = event.target.files && event.target.files[0];
-        if (!file) {
+      function handleBuilderFieldChange(target) {
+        const path = target.dataset.path;
+        const value = readFieldValue(target);
+        setDraftValue(path, value);
+        markEditorDirty();
+
+        if (path === "form.themeColor") {
+          applyThemeColor(value);
           return;
         }
+
+        if (path === "form.name" || path === "form.date" || path.endsWith(".note")) {
+          syncFieldValue(previewRoot, path, value);
+          return;
+        }
+
+        if (path.endsWith(".state")) {
+          syncStateControls(previewRoot, path, value);
+          updatePreviewSummary();
+          return;
+        }
+
+        renderPreview();
+      }
+
+      function handleAction(button) {
+        const action = button.dataset.action;
+        switch (action) {
+          case "add-section":
+            addSection();
+            break;
+          case "load-example":
+            if (confirmDiscardIfNeeded()) {
+              loadDraft(createExampleDraft(), "Loaded the bundled example form.", false);
+            }
+            break;
+          case "new-blank":
+            if (confirmDiscardIfNeeded()) {
+              loadDraft(createBlankDraft(), "Started a new blank form.", false);
+            }
+            break;
+          case "remove-section":
+            removeSection(Number(button.dataset.sectionIndex));
+            break;
+          case "move-section-up":
+            moveSection(Number(button.dataset.sectionIndex), -1);
+            break;
+          case "move-section-down":
+            moveSection(Number(button.dataset.sectionIndex), 1);
+            break;
+          case "add-subsection":
+            addSubsection(Number(button.dataset.sectionIndex));
+            break;
+          case "remove-subsection":
+            removeSubsection(Number(button.dataset.sectionIndex), Number(button.dataset.subsectionIndex));
+            break;
+          case "move-subsection-up":
+            moveSubsection(Number(button.dataset.sectionIndex), Number(button.dataset.subsectionIndex), -1);
+            break;
+          case "move-subsection-down":
+            moveSubsection(Number(button.dataset.sectionIndex), Number(button.dataset.subsectionIndex), 1);
+            break;
+          case "add-question":
+            addQuestion(Number(button.dataset.sectionIndex), Number(button.dataset.subsectionIndex));
+            break;
+          case "remove-question":
+            removeQuestion(Number(button.dataset.sectionIndex), Number(button.dataset.subsectionIndex), Number(button.dataset.questionIndex));
+            break;
+          case "move-question-up":
+            moveQuestion(Number(button.dataset.sectionIndex), Number(button.dataset.subsectionIndex), Number(button.dataset.questionIndex), -1);
+            break;
+          case "move-question-down":
+            moveQuestion(Number(button.dataset.sectionIndex), Number(button.dataset.subsectionIndex), Number(button.dataset.questionIndex), 1);
+            break;
+          default:
+            break;
+        }
+      }
+
+      function addSection() {
+        draft.sections.push({
+          id: String(draft.sections.length + 1),
+          title: "New section",
+          subsections: [createSubsection()]
+        });
+        onStructureChanged("Added a new section.");
+      }
+
+      function removeSection(sectionIndex) {
+        if (!draft.sections[sectionIndex]) { return; }
+        if (!confirm("Delete this section?")) { return; }
+        draft.sections.splice(sectionIndex, 1);
+        onStructureChanged("Removed the selected section.");
+      }
+
+      function moveSection(sectionIndex, direction) {
+        moveArrayItem(draft.sections, sectionIndex, sectionIndex + direction);
+        onStructureChanged("Reordered sections.");
+      }
+
+      function addSubsection(sectionIndex) {
+        const section = draft.sections[sectionIndex];
+        if (!section) { return; }
+        section.subsections.push(createSubsection());
+        onStructureChanged("Added a subsection.");
+      }
+
+      function removeSubsection(sectionIndex, subsectionIndex) {
+        const section = draft.sections[sectionIndex];
+        const subsection = section && section.subsections[subsectionIndex];
+        if (!subsection) { return; }
+        if (!confirm("Delete this subsection?")) { return; }
+        section.subsections.splice(subsectionIndex, 1);
+        onStructureChanged("Removed the subsection.");
+      }
+
+      function moveSubsection(sectionIndex, subsectionIndex, direction) {
+        const section = draft.sections[sectionIndex];
+        if (!section) { return; }
+        moveArrayItem(section.subsections, subsectionIndex, subsectionIndex + direction);
+        onStructureChanged("Reordered subsections.");
+      }
+
+      function addQuestion(sectionIndex, subsectionIndex) {
+        const subsection = getSubsection(sectionIndex, subsectionIndex);
+        if (!subsection) { return; }
+        subsection.questions.push(createQuestion());
+        onStructureChanged("Added a question.");
+      }
+
+      function removeQuestion(sectionIndex, subsectionIndex, questionIndex) {
+        const subsection = getSubsection(sectionIndex, subsectionIndex);
+        const question = subsection && subsection.questions[questionIndex];
+        if (!question) { return; }
+        if (!confirm("Delete this question?")) { return; }
+        subsection.questions.splice(questionIndex, 1);
+        onStructureChanged("Removed the question.");
+      }
+
+      function moveQuestion(sectionIndex, subsectionIndex, questionIndex, direction) {
+        const subsection = getSubsection(sectionIndex, subsectionIndex);
+        if (!subsection) { return; }
+        moveArrayItem(subsection.questions, questionIndex, questionIndex + direction);
+        onStructureChanged("Reordered questions.");
+      }
+
+      function onStructureChanged(message) {
+        renumberSections();
+        markEditorDirty();
+        renderBuilder();
+        renderPreview();
+        updatePreviewSummary();
+        showStatus(message);
+      }
+
+      function loadDraft(nextDraft, message, isSaved) {
+        draft = normalizeDraft(nextDraft);
+        dirty = !isSaved;
+        applyThemeColor(draft.form.themeColor);
+        renderBuilder();
+        renderPreview();
+        updatePreviewSummary();
+        updateEditorSaveState();
+        showStatus(message);
+      }
+
+      function markEditorDirty() {
+        dirty = true;
+        updateEditorSaveState();
+      }
+
+      function updateEditorSaveState() {
+        saveJsonButton.classList.toggle("has-unsaved-changes", dirty);
+        saveJsonButton.textContent = dirty ? "Save changes" : "Save";
+        saveJsonButton.setAttribute("aria-label", dirty ? "Save JSON changes" : "JSON is saved");
+        editorSaveStatus.classList.toggle("is-unsaved", dirty);
+        editorSaveStatus.textContent = dirty ? "Unsaved" : "Saved";
+      }
+
+      function renderBuilder() {
+        builderRoot.innerHTML = buildBuilderMarkup(draft);
+      }
+
+      function renderPreview() {
+        previewRoot.innerHTML = buildPreviewMarkup(draft, true, true);
+      }
+
+      function updatePreviewSummary() {
+        const stats = getDraftStats(draft);
+        const answeredRatio = previewRoot.querySelector("#answered-ratio");
+        const completionPercent = previewRoot.querySelector("#completion-percent");
+
+        if (answeredRatio) { answeredRatio.textContent = String(stats.totalAnswered) + "/" + String(stats.totalQuestions); }
+        if (completionPercent) { completionPercent.textContent = (stats.totalQuestions > 0 ? Math.round((stats.totalAnswered / stats.totalQuestions) * 100) : 0) + "%"; }
+      }
+
+      function buildBuilderMarkup(data) {
+        const sectionsMarkup = data.sections.length
+          ? data.sections.map(function(section, sectionIndex) {
+              return buildBuilderSection(section, sectionIndex);
+            }).join("")
+          : buildBuilderEmptyState();
+
+        return [
+          '<div class="builder-card">',
+          '  <div class="card-header">',
+          '    <h3 class="card-title">Form settings</h3>',
+          '    <span class="badge">Schema v' + APP_VERSION + '</span>',
+          '  </div>',
+          '  <div class="builder-card-body">',
+          '    <div class="field-grid">',
+          '      <div class="field">',
+          '        <label for="builder-form-title">Title</label>',
+          '        <input id="builder-form-title" data-path="form.title" type="text" value="' + escapeAttribute(data.form.title) + '" placeholder="' + escapeAttribute(DEFAULT_FORM_TITLE) + '">',
+          '      </div>',
+          '      <div class="field">',
+          '        <label for="builder-form-description">Description</label>',
+          '        <textarea id="builder-form-description" data-path="form.description" placeholder="Describe what this form is for.">' + escapeHtml(data.form.description) + '</textarea>',
+          '      </div>',
+          '      <div class="field">',
+          '        <label for="builder-form-name-label">Name label</label>',
+          '        <input id="builder-form-name-label" data-path="form.nameLabel" type="text" value="' + escapeAttribute(data.form.nameLabel) + '">',
+          '      </div>',
+          '      <div class="field">',
+          '        <label for="builder-form-name-placeholder">Name placeholder</label>',
+          '        <input id="builder-form-name-placeholder" data-path="form.namePlaceholder" type="text" value="' + escapeAttribute(data.form.namePlaceholder) + '">',
+          '      </div>',
+          '      <div class="field">',
+          '        <label for="builder-form-date-label">Date label</label>',
+          '        <input id="builder-form-date-label" data-path="form.dateLabel" type="text" value="' + escapeAttribute(data.form.dateLabel) + '">',
+          '      </div>',
+          '      <div class="field">',
+          '        <label for="builder-form-theme-color">Theme color</label>',
+          '        <input id="builder-form-theme-color" data-path="form.themeColor" type="color" value="' + escapeAttribute(data.form.themeColor || DEFAULT_THEME_COLOR) + '">',
+          '      </div>',
+          '    </div>',
+          '    <div class="field-grid field-grid--stacked" style="margin-top: 0.9rem;">',
+          '      <div class="field">',
+          '        <label for="builder-form-task">Task</label>',
+          '        <textarea id="builder-form-task" data-path="form.task" placeholder="Describe what an AI agent should do with the completed form...">' + escapeHtml(data.form.task || "") + '</textarea>',
+          '        <p class="field-help">Included in JSON and Markdown exports. Hidden from the preview and respondent form.</p>',
+          '      </div>',
+          '    </div>',
+          '    <div class="field-grid field-grid--stacked" style="margin-top: 0.9rem;">',
+          '      <div class="field">',
+          '        <label for="builder-form-name">Default name value</label>',
+          '        <input id="builder-form-name" data-path="form.name" type="text" value="' + escapeAttribute(data.form.name) + '" placeholder="Optional default value">',
+          '      </div>',
+          '      <div class="field">',
+          '        <label for="builder-form-date">Default date value</label>',
+          '        <input id="builder-form-date" data-path="form.date" type="date" value="' + escapeAttribute(data.form.date) + '">',
+          '      </div>',
+          '    </div>',
+          '  </div>',
+          '</div>',
+          '<div class="builder-card" style="margin-top: 1rem;">',
+          '  <div class="card-header">',
+          '    <h3 class="card-title">Sections</h3>',
+          '    <div class="card-header-actions">',
+          '      <span class="badge">' + data.sections.length + ' section' + (data.sections.length === 1 ? '' : 's') + '</span>',
+          '      <button class="btn btn-primary btn-small" id="btn-add-section" type="button" data-action="add-section">Add section</button>',
+          '    </div>',
+          '  </div>',
+          '  <div class="builder-card-body section-stack">',
+          sectionsMarkup,
+          '  </div>',
+          '</div>'
+        ].join("");
+      }
+
+      function buildBuilderEmptyState() {
+        return [
+          '<div class="empty-state">',
+          '  <div>',
+          '    <p class="eyebrow">No sections yet</p>',
+          '    <h3>Start with a section</h3>',
+          '    <p>Add your first section to begin shaping the JSON structure, or load the bundled example if you want a ready-made reference.</p>',
+          '  </div>',
+          '  <div class="empty-actions">',
+          '    <button class="btn btn-primary btn-small" type="button" data-action="add-section">Add section</button>',
+          '    <button class="btn btn-secondary btn-small" type="button" data-action="load-example">Load example</button>',
+          '  </div>',
+          '</div>'
+        ].join("");
+      }
+
+      function buildBuilderSection(section, sectionIndex) {
+        const subsectionMarkup = section.subsections.length
+          ? section.subsections.map(function(subsection, subsectionIndex) {
+              return buildBuilderSubsection(sectionIndex, subsection, subsectionIndex);
+            }).join("")
+          : [
+              '<div class="empty-state">',
+              '  <p class="eyebrow">No subsections yet</p>',
+              '  <h4>Add one to continue</h4>',
+              '  <p>This section currently has no subsections. Add one to keep the draft usable.</p>',
+              '  <div class="empty-actions">',
+              '    <button class="btn btn-primary btn-small" type="button" data-action="add-subsection" data-section-index="' + sectionIndex + '">Add subsection</button>',
+              '  </div>',
+              '</div>'
+            ].join("");
+        const canMoveUp = sectionIndex > 0;
+        const canMoveDown = sectionIndex < draft.sections.length - 1;
+
+        return [
+          '<article class="section-card" data-section-index="' + sectionIndex + '">',
+          '  <div class="section-header">',
+          '    <div class="structure-name-field">',
+          '      <input class="structure-name-input" id="section-' + sectionIndex + '-title" data-path="sections.' + sectionIndex + '.title" type="text" value="' + escapeAttribute(section.title) + '" placeholder="Section name" aria-label="Section ' + (sectionIndex + 1) + ' name">',
+          '    </div>',
+          '    <div class="section-actions">',
+          '      <button class="btn btn-ghost btn-small icon-button" type="button" data-action="move-section-up" data-section-index="' + sectionIndex + '"' + (canMoveUp ? '' : ' disabled') + '>Up</button>',
+          '      <button class="btn btn-ghost btn-small icon-button" type="button" data-action="move-section-down" data-section-index="' + sectionIndex + '"' + (canMoveDown ? '' : ' disabled') + '>Down</button>',
+          '      <button class="btn btn-danger btn-small" type="button" data-action="remove-section" data-section-index="' + sectionIndex + '">Remove</button>',
+          '    </div>',
+          '  </div>',
+          '  <div class="section-body">',
+          subsectionMarkup,
+          '  </div>',
+          '  <div class="section-footer">',
+          '    <button class="btn btn-primary btn-small" type="button" data-action="add-subsection" data-section-index="' + sectionIndex + '">Add subsection</button>',
+          '  </div>',
+          '</article>'
+        ].join("");
+      }
+
+      function buildBuilderSubsection(sectionIndex, subsection, subsectionIndex) {
+        const canMoveUp = subsectionIndex > 0;
+        const canMoveDown = subsectionIndex < draft.sections[sectionIndex].subsections.length - 1;
+        const questionMarkup = subsection.questions.length
+          ? subsection.questions.map(function(question, questionIndex) {
+              return buildBuilderQuestion(sectionIndex, subsectionIndex, question, questionIndex);
+            }).join("")
+          : [
+              '<div class="empty-state">',
+              '  <p class="eyebrow">No questions yet</p>',
+              '  <h4>Add a question</h4>',
+              '  <p>This subsection is empty until you add at least one question.</p>',
+              '  <div class="empty-actions">',
+              '    <button class="btn btn-primary btn-small" type="button" data-action="add-question" data-section-index="' + sectionIndex + '" data-subsection-index="' + subsectionIndex + '">Add question</button>',
+              '  </div>',
+              '</div>'
+            ].join("");
+
+        return [
+          '<section class="subsection-card" data-section-index="' + sectionIndex + '" data-subsection-index="' + subsectionIndex + '">',
+          '  <div class="subsection-header">',
+          '    <div class="structure-name-field">',
+          '      <input class="structure-name-input" id="section-' + sectionIndex + '-subsection-' + subsectionIndex + '-title" data-path="sections.' + sectionIndex + '.subsections.' + subsectionIndex + '.title" type="text" value="' + escapeAttribute(subsection.title) + '" placeholder="Subsection name" aria-label="Subsection ' + (subsectionIndex + 1) + ' name">',
+          '    </div>',
+          '    <div class="subsection-actions">',
+          '      <button class="btn btn-ghost btn-small icon-button" type="button" data-action="move-subsection-up" data-section-index="' + sectionIndex + '" data-subsection-index="' + subsectionIndex + '"' + (canMoveUp ? '' : ' disabled') + '>Up</button>',
+          '      <button class="btn btn-ghost btn-small icon-button" type="button" data-action="move-subsection-down" data-section-index="' + sectionIndex + '" data-subsection-index="' + subsectionIndex + '"' + (canMoveDown ? '' : ' disabled') + '>Down</button>',
+          '      <button class="btn btn-danger btn-small" type="button" data-action="remove-subsection" data-section-index="' + sectionIndex + '" data-subsection-index="' + subsectionIndex + '">Remove</button>',
+          '    </div>',
+          '  </div>',
+          '  <div class="subsection-body">',
+          '    <div class="field">',
+          '      <label for="section-' + sectionIndex + '-subsection-' + subsectionIndex + '-description">Description</label>',
+          '      <textarea id="section-' + sectionIndex + '-subsection-' + subsectionIndex + '-description" data-path="sections.' + sectionIndex + '.subsections.' + subsectionIndex + '.description" placeholder="Explain what should be filled in for this subsection...">' + escapeHtml(subsection.description || "") + '</textarea>',
+          '    </div>',
+          '    <div class="question-list">',
+          questionMarkup,
+          '    </div>',
+          '  </div>',
+          '  <div class="subsection-footer">',
+          '    <button class="btn btn-primary btn-small" type="button" data-action="add-question" data-section-index="' + sectionIndex + '" data-subsection-index="' + subsectionIndex + '">Add question</button>',
+          '  </div>',
+          '</section>'
+        ].join("");
+      }
+
+      function buildBuilderQuestion(sectionIndex, subsectionIndex, question, questionIndex) {
+        const questions = draft.sections[sectionIndex].subsections[subsectionIndex].questions;
+        const canMoveUp = questionIndex > 0;
+        const canMoveDown = questionIndex < questions.length - 1;
+        const path = "sections." + sectionIndex + ".subsections." + subsectionIndex + ".questions." + questionIndex;
+
+        return [
+          '<div class="question-row" data-section-index="' + sectionIndex + '" data-subsection-index="' + subsectionIndex + '" data-question-index="' + questionIndex + '">',
+          '  <input id="section-' + sectionIndex + '-subsection-' + subsectionIndex + '-question-' + questionIndex + '" class="question-input" data-path="' + path + '.text" type="text" value="' + escapeAttribute(question.text || "") + '" placeholder="Question" aria-label="Question ' + (questionIndex + 1) + '">',
+          '  <div class="question-actions">',
+          '      <button class="btn btn-ghost btn-small icon-button" type="button" data-action="move-question-up" data-section-index="' + sectionIndex + '" data-subsection-index="' + subsectionIndex + '" data-question-index="' + questionIndex + '"' + (canMoveUp ? '' : ' disabled') + '>Up</button>',
+          '      <button class="btn btn-ghost btn-small icon-button" type="button" data-action="move-question-down" data-section-index="' + sectionIndex + '" data-subsection-index="' + subsectionIndex + '" data-question-index="' + questionIndex + '"' + (canMoveDown ? '' : ' disabled') + '>Down</button>',
+          '      <button class="btn btn-danger btn-small" type="button" data-action="remove-question" data-section-index="' + sectionIndex + '" data-subsection-index="' + subsectionIndex + '" data-question-index="' + questionIndex + '">Remove</button>',
+          '  </div>',
+          '</div>'
+        ].join("");
+      }
+
+      function buildPreviewMarkup(data, readOnly, showFormHeader) {
+        const stats = getDraftStats(data);
+        const formHeaderMarkup = showFormHeader
+          ? [
+              '    <div class="preview-header">',
+              '      <p class="eyebrow">Interactive form</p>',
+              '      <h2>' + escapeHtml(data.form.title) + '</h2>',
+              '      <p>' + escapeHtml(data.form.description) + '</p>',
+              '    </div>'
+            ].join("")
+          : "";
+        const sectionsMarkup = data.sections.length
+          ? data.sections.map(function(section, sectionIndex) {
+              return buildPreviewSection(section, sectionIndex, readOnly);
+            }).join("")
+          : [
+              '<div class="empty-state preview-empty">',
+              '  <p class="eyebrow">Preview</p>',
+              '  <h3>No sections yet</h3>',
+              '  <p>This form is empty. Add sections in the builder to see the interactive layout here.</p>',
+              '</div>'
+            ].join("");
+
+        return [
+          '<div class="preview-shell">',
+          '  <section class="preview-card">',
+          formHeaderMarkup,
+          '    <div class="preview-top-fields">',
+          '      <div class="field-grid">',
+          '        <div class="field">',
+          '          <label for="preview-form-name">' + escapeHtml(data.form.nameLabel) + '</label>',
+          '          <input id="preview-form-name" data-path="form.name" type="text" value="' + escapeAttribute(data.form.name) + '" placeholder="' + escapeAttribute(data.form.namePlaceholder) + '"' + (readOnly ? ' disabled' : '') + '>',
+          '        </div>',
+          '        <div class="field">',
+          '          <label for="preview-form-date">' + escapeHtml(data.form.dateLabel) + '</label>',
+          '          <input id="preview-form-date" data-path="form.date" type="date" value="' + escapeAttribute(data.form.date) + '"' + (readOnly ? ' disabled' : '') + '>',
+          '        </div>',
+          '      </div>',
+          '    </div>',
+          '  </section>',
+          '  <section class="summary-grid">',
+          '    <div class="summary-card">',
+          '      <label>Answered</label>',
+          '      <div class="summary-value" id="answered-ratio">' + String(stats.totalAnswered) + "/" + String(stats.totalQuestions) + '</div>',
+          '      <div class="summary-note">answered / total questions</div>',
+          '    </div>',
+          '    <div class="summary-card">',
+          '      <label>Completion rate</label>',
+          '      <div class="summary-value" id="completion-percent">' + (stats.totalQuestions > 0 ? Math.round((stats.totalAnswered / stats.totalQuestions) * 100) : 0) + '%</div>',
+          '      <div class="summary-note">form completion</div>',
+          '    </div>',
+          '  </section>',
+          sectionsMarkup,
+          '</div>'
+        ].join("");
+      }
+
+      function buildPreviewSection(section, sectionIndex, readOnly) {
+        const subsectionsMarkup = section.subsections.length
+          ? section.subsections.map(function(subsection, subsectionIndex) {
+              return buildPreviewSubsection(sectionIndex, subsection, subsectionIndex, readOnly);
+            }).join("")
+          : [
+              '<div class="empty-state preview-empty">',
+              '  <p class="eyebrow">Section empty</p>',
+              '  <h3>No subsections</h3>',
+              '  <p>This section does not contain any subsections yet.</p>',
+              '</div>'
+            ].join("");
+
+        return [
+          '<section class="section-card preview-section">',
+          '  <div class="preview-section-header">',
+          '    <h3><span>' + escapeHtml(section.id) + '</span>. <span>' + escapeHtml(section.title) + '</span></h3>',
+          '  </div>',
+          subsectionsMarkup,
+          '</section>'
+        ].join("");
+      }
+
+      function buildPreviewSubsection(sectionIndex, subsection, subsectionIndex, readOnly) {
+        const questionMarkup = subsection.questions.length
+          ? subsection.questions.map(function(question, questionIndex) {
+              return buildPreviewQuestion(sectionIndex, subsectionIndex, question, questionIndex, readOnly);
+            }).join("")
+          : [
+              '<div class="empty-state preview-empty">',
+              '  <p class="eyebrow">No questions</p>',
+              '  <h3>This subsection is empty</h3>',
+              '  <p>Add a question in the builder to make this section interactive.</p>',
+              '</div>'
+            ].join("");
+
+        return [
+          '<article class="preview-subsection">',
+          '  <div class="preview-subsection-header">',
+          '    <h4>' + escapeHtml(subsection.title) + '</h4>',
+          '  </div>',
+          subsection.description ? '  <p class="preview-subsection-description">' + escapeHtml(subsection.description) + '</p>' : '',
+          '  <div class="question-stack">',
+          questionMarkup,
+          '  </div>',
+          '  <div class="comment-wrap subsection-note">',
+          '    <label for="preview-note-' + sectionIndex + '-' + subsectionIndex + '">Note</label>',
+          '    <textarea id="preview-note-' + sectionIndex + '-' + subsectionIndex + '" class="comment-textarea" data-path="sections.' + sectionIndex + '.subsections.' + subsectionIndex + '.note" placeholder="Add a note for this subsection..."' + (readOnly ? ' disabled' : '') + '>' + escapeHtml(subsection.note || "") + '</textarea>',
+          '  </div>',
+          '</article>'
+        ].join("");
+      }
+
+      function buildPreviewQuestion(sectionIndex, subsectionIndex, question, questionIndex, readOnly) {
+        const state = normalizeQuestionState(question.state);
+        const path = "sections." + sectionIndex + ".subsections." + subsectionIndex + ".questions." + questionIndex + ".state";
+        const disabledAttribute = readOnly ? " disabled" : "";
+
+        return [
+          '<div class="preview-question">',
+          '  <div>',
+          '    <p class="question-label">' + escapeHtml(question.text || "") + '</p>',
+          '  </div>',
+          '  <div class="state-control" data-state-path="' + path + '">',
+          '    <button class="state-option' + (state === "unset" ? ' is-active' : '') + '" type="button" data-state-value="unset" aria-pressed="' + (state === "unset" ? "true" : "false") + '"' + disabledAttribute + '>Unset</button>',
+          '    <button class="state-option' + (state === "yes" ? ' is-active' : '') + '" type="button" data-state-value="yes" aria-pressed="' + (state === "yes" ? "true" : "false") + '"' + disabledAttribute + '>Yes</button>',
+          '    <button class="state-option' + (state === "no" ? ' is-active' : '') + '" type="button" data-state-value="no" aria-pressed="' + (state === "no" ? "true" : "false") + '"' + disabledAttribute + '>No</button>',
+          '  </div>',
+          '</div>'
+        ].join("");
+      }
+
+      function handleLoadFile(event) {
+        const file = event.target.files && event.target.files[0];
+        if (!file) { return; }
 
         const reader = new FileReader();
         reader.onload = function(loadEvent) {
           try {
-            const imported = JSON.parse(loadEvent.target.result);
-            importJSONData(imported, file.name);
-            event.target.value = "";
+            const imported = JSON.parse(String(loadEvent.target.result || ""));
+            loadDraft(imported, "Loaded " + file.name + ".", true);
           } catch (error) {
             console.error("Error importing JSON:", error);
             alert("The file could not be loaded. Please make sure it contains valid JSON.");
-            event.target.value = "";
+          } finally {
+            fileInput.value = "";
           }
         };
-
         reader.onerror = function() {
           alert("The file could not be read.");
-          event.target.value = "";
+          fileInput.value = "";
         };
-
         reader.readAsText(file, "utf-8");
       }
 
-      function importJSONData(sourceData, sourceName) {
-        const normalized = normalizeImportedData(sourceData);
-
-        auditData = {
-          sections: normalized.sections
-        };
-        checkStates = normalized.checkStates;
-        commentStates = normalized.commentStates;
-        formMetadata = normalized.formMetadata;
-        themeColor = normalized.themeColor;
-
-        document.getElementById("project-name").value = normalized.formName;
-        document.getElementById("audit-date").value = normalized.processingDate;
-        updateHeaderContent(normalized.formTitle, normalized.formDescription);
-        updateFormFieldMetadata(normalized.formMetadata);
-        applyThemeColor(normalized.themeColor);
-
-        renderSections();
-        updateUIState();
-        updateScores();
-        showStatus("Loaded file: " + sourceName);
+      function saveCurrentJson() {
+        const jsonData = serializeDraft(draft);
+        const baseName = sanitizeFileName(draft.form.title || draft.form.name || "kinjuson_form");
+        downloadFile(JSON.stringify(jsonData, null, 2), baseName + ".json", "application/json;charset=utf-8");
+        dirty = false;
+        updateEditorSaveState();
+        showStatus("Saved JSON as " + baseName + ".json");
       }
 
-      function normalizeImportedData(sourceData) {
-        if (!sourceData || !Array.isArray(sourceData.sections)) {
+      function exportCurrentHtml() {
+        const html = buildStandaloneHtml(draft);
+        const baseName = sanitizeFileName(draft.form.title || draft.form.name || "kinjuson_form");
+        downloadFile(html, baseName + ".html", "text/html;charset=utf-8");
+        showStatus("Exported standalone HTML as " + baseName + ".html");
+      }
+
+      function buildStandaloneHtml(data) {
+        const title = escapeHtml(data.form.title || DEFAULT_FORM_TITLE);
+        const description = escapeHtml(data.form.description || DEFAULT_FORM_DESCRIPTION);
+        const jsonPayload = serializeJsonForScript(serializeDraft(data));
+        const markup = buildPreviewMarkup(data, false, false);
+
+        return [
+          '<!DOCTYPE html>',
+          '<html lang="en">',
+          '<head>',
+          '  <meta charset="UTF-8">',
+          '  <meta name="viewport" content="width=device-width, initial-scale=1.0">',
+          '  <title>' + title + '</title>',
+          '  <style>',
+          STANDALONE_CSS,
+          STYLE_CLOSE,
+          '</head>',
+          '<body>',
+          '  <div class="standalone-app">',
+          '    <header class="standalone-header">',
+          '      <div>',
+          '        <h1>' + title + '</h1>',
+          '        <p>' + description + '</p>',
+          '      </div>',
+          '      <div class="standalone-toolbar">',
+          '        <div class="save-group">',
+          '          <span class="save-status" id="standalone-save-status" aria-live="polite">Saved</span>',
+          '          <button class="btn btn-primary btn-save" id="standalone-save-progress" type="button">Save progress</button>',
+          '        </div>',
+          '        <details class="export-menu" id="standalone-export-menu">',
+          '          <summary class="btn btn-secondary">Export</summary>',
+          '          <div class="export-menu-panel">',
+          '            <button class="export-menu-item" id="standalone-export-json" type="button">JSON</button>',
+          '            <button class="export-menu-item" id="standalone-export-markdown-table" type="button">Markdown</button>',
+          '          </div>',
+          '        </details>',
+          '      </div>',
+          '    </header>',
+          '    <main class="standalone-main">',
+          '      <div id="standalone-root" class="form-shell">',
+          markup,
+          '      </div>',
+          '    </main>',
+          '  </div>',
+          '  <script id="kinjuson-data" type="application/json">' + jsonPayload + SCRIPT_CLOSE,
+          '  <script>',
+          STANDALONE_RUNTIME_SOURCE,
+          SCRIPT_CLOSE,
+          '</body>',
+          '</html>'
+        ].join("");
+      }
+
+      function confirmDiscardIfNeeded() {
+        if (!dirty) { return true; }
+        return confirm("You have unsaved changes in the current draft. Continue and discard them?");
+      }
+
+      function getDraftStats(data) {
+        let totalQuestions = 0;
+        let totalAnswered = 0;
+
+        data.sections.forEach(function(section) {
+          section.subsections.forEach(function(subsection) {
+            subsection.questions.forEach(function(question) {
+              const state = normalizeQuestionState(question.state);
+              totalQuestions += 1;
+              if (state !== "unset") { totalAnswered += 1; }
+            });
+          });
+        });
+
+        return { totalQuestions: totalQuestions, totalAnswered: totalAnswered };
+      }
+
+      function getSubsection(sectionIndex, subsectionIndex) {
+        const section = draft.sections[sectionIndex];
+        return section && section.subsections[subsectionIndex];
+      }
+
+      function renumberSections() {
+        draft.sections.forEach(function(section, sectionIndex) {
+          section.id = String(sectionIndex + 1);
+        });
+      }
+
+      function createSubsection() {
+        return {
+          title: "New subsection",
+          description: "",
+          note: "",
+          questions: [createQuestion()]
+        };
+      }
+
+      function createQuestion() {
+        return { text: "New question", state: "unset", checked: false };
+      }
+
+      function createBlankDraft() {
+        return cloneDraft({
+          app: APP_NAME,
+          version: APP_VERSION,
+          form: {
+            title: DEFAULT_FORM_TITLE,
+            description: DEFAULT_FORM_DESCRIPTION,
+            task: "",
+            themeColor: DEFAULT_THEME_COLOR,
+            nameLabel: DEFAULT_NAME_LABEL,
+            namePlaceholder: DEFAULT_NAME_PLACEHOLDER,
+            name: "",
+            dateLabel: DEFAULT_DATE_LABEL,
+            date: ""
+          },
+          sections: []
+        });
+      }
+
+      function createExampleDraft() {
+        return cloneDraft(EXAMPLE_DRAFT);
+      }
+
+      function normalizeDraft(sourceData) {
+        if (!sourceData || typeof sourceData !== "object" || !Array.isArray(sourceData.sections)) {
           throw new Error("The JSON does not contain a sections array.");
         }
 
-        const normalizedSections = [];
-        const nextCheckStates = {};
-        const nextCommentStates = {};
-
-        sourceData.sections.forEach(function(section, sectionIndex) {
-          const sectionId = section.id || String(sectionIndex + 1);
-          const normalizedSection = {
-            id: String(sectionId),
-            title: section.title || ("Section " + (sectionIndex + 1)),
-            subsections: []
-          };
-
-          const subsections = Array.isArray(section.subsections) ? section.subsections : [];
-
-          subsections.forEach(function(subsection, subIndex) {
-            const normalizedSubsection = {
-              title: subsection.title || ("Subsection " + (subIndex + 1)),
-              questions: []
-            };
-
-            const commentId = getCommentId(sectionId, subIndex);
-            nextCommentStates[commentId] = typeof subsection.note === "string" ? subsection.note : "";
-
-            const questions = Array.isArray(subsection.questions) ? subsection.questions : [];
-            questions.forEach(function(question, questionIndex) {
-              let questionText = "";
-              let state = "unset";
-
-              if (typeof question === "string") {
-                questionText = question;
-              } else if (question && typeof question === "object") {
-                questionText = question.text || question.label || "";
-                state = normalizeQuestionState(question);
-              }
-
-              if (!questionText) {
-                return;
-              }
-
-              normalizedSubsection.questions.push(questionText);
-              nextCheckStates[getCheckId(sectionId, subIndex, questionIndex)] = state;
-            });
-
-            normalizedSection.subsections.push(normalizedSubsection);
-          });
-
-          normalizedSections.push(normalizedSection);
-        });
+        const formSource = sourceData.form && typeof sourceData.form === "object" ? sourceData.form : {};
+        const legacyMeta = sourceData.meta && typeof sourceData.meta === "object" ? sourceData.meta : {};
 
         return {
-          formName: readFirstString([
-            sourceData.formName,
-            sourceData.meta && sourceData.meta.formName,
-            sourceData.form && sourceData.form.name,
-            sourceData.project && sourceData.project.name
-          ]),
-          formTitle: readFirstString([
-            sourceData.title,
-            sourceData.meta && sourceData.meta.title,
-            sourceData.form && sourceData.form.title,
-            sourceData.project && sourceData.project.title,
-            sourceData.form && sourceData.form.name
-          ]),
-          formDescription: readFirstString([
-            sourceData.description,
-            sourceData.meta && sourceData.meta.description,
-            sourceData.form && sourceData.form.description,
-            sourceData.project && sourceData.project.description
-          ]),
-          themeColor: normalizeThemeColor(readFirstString([
-            sourceData.form && sourceData.form.themeColor,
-            sourceData.themeColor,
-            sourceData.meta && sourceData.meta.themeColor,
-            sourceData.project && sourceData.project.themeColor
-          ])),
-          processingDate: readFirstString([
-            sourceData.processingDate,
-            sourceData.meta && sourceData.meta.processingDate,
-            sourceData.form && sourceData.form.date,
-            sourceData.project && sourceData.project.date,
-            sourceData.auditDate
-          ]),
-          formMetadata: {
-            nameLabel: readFirstString([
-              sourceData.form && sourceData.form.nameLabel,
-              sourceData.meta && sourceData.meta.nameLabel,
-              sourceData.project && sourceData.project.nameLabel
-            ]) || defaultFormMetadata.nameLabel,
-            namePlaceholder: readFirstString([
-              sourceData.form && sourceData.form.namePlaceholder,
-              sourceData.meta && sourceData.meta.namePlaceholder,
-              sourceData.project && sourceData.project.namePlaceholder
-            ]) || defaultFormMetadata.namePlaceholder,
-            dateLabel: readFirstString([
-              sourceData.form && sourceData.form.dateLabel,
-              sourceData.meta && sourceData.meta.dateLabel,
-              sourceData.project && sourceData.project.dateLabel
-            ]) || defaultFormMetadata.dateLabel
+          app: APP_NAME,
+          version: APP_VERSION,
+          form: {
+            title: firstMeaningfulString([formSource.title, sourceData.title, legacyMeta.title, APP_NAME], DEFAULT_FORM_TITLE),
+            description: firstMeaningfulString([formSource.description, sourceData.description, legacyMeta.description], DEFAULT_FORM_DESCRIPTION),
+            task: firstString([formSource.task, sourceData.task, legacyMeta.task], ""),
+            themeColor: normalizeThemeColor(firstString([formSource.themeColor, sourceData.themeColor, legacyMeta.themeColor], DEFAULT_THEME_COLOR)) || DEFAULT_THEME_COLOR,
+            nameLabel: firstMeaningfulString([formSource.nameLabel, legacyMeta.nameLabel, sourceData.nameLabel], DEFAULT_NAME_LABEL),
+            namePlaceholder: firstMeaningfulString([formSource.namePlaceholder, legacyMeta.namePlaceholder, sourceData.namePlaceholder], DEFAULT_NAME_PLACEHOLDER),
+            name: firstString([formSource.name, sourceData.name, legacyMeta.name], ""),
+            dateLabel: firstMeaningfulString([formSource.dateLabel, legacyMeta.dateLabel, sourceData.dateLabel], DEFAULT_DATE_LABEL),
+            date: firstString([formSource.date, sourceData.date, legacyMeta.date, sourceData.processingDate], "")
           },
-          sections: normalizedSections,
-          checkStates: nextCheckStates,
-          commentStates: nextCommentStates
+          sections: sourceData.sections.map(function(section, sectionIndex) {
+            const source = section && typeof section === "object" ? section : {};
+            return {
+              id: String(sectionIndex + 1),
+              title: firstMeaningfulString([source.title], "Section " + (sectionIndex + 1)),
+              subsections: (Array.isArray(source.subsections) ? source.subsections : []).map(function(subsection, subsectionIndex) {
+                const sub = subsection && typeof subsection === "object" ? subsection : {};
+                return {
+                  title: firstMeaningfulString([sub.title], "Subsection " + (subsectionIndex + 1)),
+                  description: firstString([sub.description], ""),
+                  note: firstString([sub.note], ""),
+                  questions: (Array.isArray(sub.questions) ? sub.questions : []).map(function(question, questionIndex) {
+                    return normalizeQuestion(question, questionIndex);
+                  })
+                };
+              })
+            };
+          })
         };
       }
 
-      function readFirstString(values) {
-        for (let i = 0; i < values.length; i++) {
-          if (typeof values[i] === "string") {
-            return values[i];
+      function normalizeQuestion(question, questionIndex) {
+        if (typeof question === "string") {
+          return { text: question, state: "unset", checked: false };
+        }
+        const source = question && typeof question === "object" ? question : {};
+        const state = normalizeQuestionState(source.state || source.answer || source.checked);
+        const text = firstMeaningfulString([source.text, source.label], "Question " + (questionIndex + 1));
+        return { text: text, state: state, checked: state === "yes" };
+      }
+
+      function normalizeQuestionState(value) {
+        if (value === true || value === "yes" || value === "checked") { return "yes"; }
+        if (value === false || value === "no") { return "no"; }
+        return "unset";
+      }
+
+      function firstString(values, fallback) {
+        for (let index = 0; index < values.length; index += 1) {
+          if (typeof values[index] === "string") {
+            return values[index];
           }
         }
-        return "";
+        return fallback;
       }
 
-      function renderSections() {
-        const container = document.getElementById("sections-container");
-        container.innerHTML = "";
-
-        if (!auditData || !Array.isArray(auditData.sections) || !auditData.sections.length) {
-          return;
+      function firstMeaningfulString(values, fallback) {
+        for (let index = 0; index < values.length; index += 1) {
+          const value = values[index];
+          if (typeof value === "string" && value.trim()) {
+            return value.trim();
+          }
         }
-
-        auditData.sections.forEach(function(section) {
-          const sectionEl = document.createElement("div");
-          sectionEl.className = "section";
-          sectionEl.id = "section-" + section.id;
-
-          let sectionHTML = `
-            <div class="section-title">
-              <h3>${escapeHtml(section.id)}. ${escapeHtml(section.title)}</h3>
-              <div class="section-score" id="score-${escapeAttribute(section.id)}">0%</div>
-            </div>
-          `;
-
-          section.subsections.forEach(function(subsection, subIdx) {
-            const commentId = getCommentId(section.id, subIdx);
-
-            sectionHTML += `
-              <div class="subsection">
-                <div class="subsection-title">${escapeHtml(subsection.title)}</div>
-                <div class="checkbox-list">
-            `;
-
-            subsection.questions.forEach(function(question, qIdx) {
-              const checkId = getCheckId(section.id, subIdx, qIdx);
-              const state = normalizeCheckState(checkStates[checkId]);
-
-              sectionHTML += `
-                <div class="checkbox-item" data-state="${escapeAttribute(state)}">
-                  <div class="question-state-control" role="group" aria-label="Answer state">
-                    ${renderStateButton(checkId, "unset", "Unset", state)}
-                    ${renderStateButton(checkId, "yes", "Yes", state)}
-                    ${renderStateButton(checkId, "no", "No", state)}
-                  </div>
-                  <label>${escapeHtml(question)}</label>
-                </div>
-              `;
-            });
-
-            sectionHTML += `
-                </div>
-                <div class="comment-box">
-                  <textarea id="${escapeAttribute(commentId)}" class="comment-textarea" placeholder="Note / comment for this section..."></textarea>
-                </div>
-              </div>
-            `;
-          });
-
-          sectionEl.innerHTML = sectionHTML;
-          container.appendChild(sectionEl);
-
-          sectionEl.querySelectorAll(".state-option").forEach(function(button) {
-            button.addEventListener("click", onStateButtonClick);
-          });
-
-          sectionEl.querySelectorAll(".comment-textarea").forEach(function(textarea) {
-            textarea.value = commentStates[textarea.id] || "";
-            textarea.addEventListener("input", onCommentChange);
-          });
-        });
+        return fallback;
       }
 
-      function onStateButtonClick(event) {
-        const button = event.currentTarget;
-        const checkId = button.dataset.checkId;
-        const nextState = normalizeCheckState(button.dataset.state);
-        checkStates[checkId] = nextState;
-        syncQuestionStateUI(checkId, nextState);
-        updateScores();
+      function cloneDraft(value) {
+        return JSON.parse(JSON.stringify(value));
       }
 
-      function onCommentChange(event) {
-        commentStates[event.target.id] = event.target.value;
-      }
-
-      function updateScores() {
-        let totalQuestions = 0;
-        let totalAnswered = 0;
-        let totalYes = 0;
-
-        if (auditData && Array.isArray(auditData.sections)) {
-          auditData.sections.forEach(function(section) {
-            let sectionQuestions = 0;
-            let sectionYes = 0;
-
-            section.subsections.forEach(function(subsection, subIdx) {
-              subsection.questions.forEach(function(_, qIdx) {
-                const checkId = getCheckId(section.id, subIdx, qIdx);
-                const state = normalizeCheckState(checkStates[checkId]);
-                sectionQuestions++;
-                totalQuestions++;
-
-                if (state !== "unset") {
-                  totalAnswered++;
-                }
-
-                if (state === "yes") {
-                  sectionYes++;
-                  totalYes++;
-                }
-              });
-            });
-
-            const scoreEl = document.getElementById("score-" + section.id);
-            if (scoreEl) {
-              const sectionScore = sectionQuestions > 0 ? (sectionYes / sectionQuestions) * 100 : 0;
-              scoreEl.className = "section-score " + getScoringClass(sectionScore);
-              scoreEl.textContent = Math.round(sectionScore) + "%";
-            }
-          });
-        }
-
-        const overallScore = totalQuestions > 0 ? (totalYes / totalQuestions) * 100 : 0;
-        const overallScoreCard = document.getElementById("overall-score-card");
-
-        overallScoreCard.className = "summary-card " + getScoringClass(overallScore);
-        document.getElementById("overall-score").textContent = String(Math.round(overallScore));
-        document.getElementById("answered-ratio").textContent = String(totalAnswered) + "/" + String(totalQuestions);
-        document.getElementById("total-yes").textContent = String(totalYes);
-        document.getElementById("completion-percent").textContent = (totalQuestions > 0 ? Math.round((totalAnswered / totalQuestions) * 100) : 0) + "%";
-        document.getElementById("overall-progress").style.width = Math.round(overallScore) + "%";
-      }
-
-      function getScoringClass(score) {
-        if (score >= 70) {
-          return "good";
-        }
-        if (score >= 40) {
-          return "medium";
-        }
-        return "poor";
-      }
-
-      function exportToJSON() {
-        if (!auditData || !Array.isArray(auditData.sections) || !auditData.sections.length) {
-          alert("Import JSON data first.");
-          return;
-        }
-
-        const formName = document.getElementById("project-name").value;
-        const processingDate = document.getElementById("audit-date").value;
-        const jsonData = {
-          app: "Kinjuson",
-          version: 1,
+      function serializeDraft(data) {
+        return {
+          app: APP_NAME,
+          version: APP_VERSION,
           form: {
-            title: document.getElementById("page-title").textContent,
-            description: document.getElementById("page-subtitle").textContent,
-            themeColor: getThemeColorValue(),
-            nameLabel: getFormMetadataValue("nameLabel"),
-            namePlaceholder: getFormMetadataValue("namePlaceholder"),
-            dateLabel: getFormMetadataValue("dateLabel"),
-            name: formName,
-            date: processingDate
+            title: data.form.title || DEFAULT_FORM_TITLE,
+            description: data.form.description || DEFAULT_FORM_DESCRIPTION,
+            task: typeof data.form.task === "string" ? data.form.task : "",
+            themeColor: normalizeThemeColor(data.form.themeColor) || DEFAULT_THEME_COLOR,
+            nameLabel: data.form.nameLabel || DEFAULT_NAME_LABEL,
+            namePlaceholder: data.form.namePlaceholder || DEFAULT_NAME_PLACEHOLDER,
+            name: data.form.name || "",
+            dateLabel: data.form.dateLabel || DEFAULT_DATE_LABEL,
+            date: data.form.date || ""
           },
-          sections: []
-        };
-
-        auditData.sections.forEach(function(section) {
-          const sectionData = {
-            id: section.id,
-            title: section.title,
-            subsections: []
-          };
-
-          section.subsections.forEach(function(subsection, subIdx) {
-            const subsectionData = {
-              title: subsection.title,
-              note: commentStates[getCommentId(section.id, subIdx)] || "",
-              questions: []
+          sections: data.sections.map(function(section, sectionIndex) {
+            return {
+              id: String(sectionIndex + 1),
+              title: section.title || "",
+              subsections: section.subsections.map(function(subsection) {
+                return {
+                  title: subsection.title || "",
+                  description: subsection.description || "",
+                  note: subsection.note || "",
+                  questions: subsection.questions.map(function(question) {
+                    const state = normalizeQuestionState(question.state);
+                    return {
+                      text: question.text || "",
+                      state: state,
+                      checked: state === "yes"
+                    };
+                  })
+                };
+              })
             };
+          })
+        };
+      }
 
-            subsection.questions.forEach(function(question, qIdx) {
-              const state = normalizeCheckState(checkStates[getCheckId(section.id, subIdx, qIdx)]);
-              subsectionData.questions.push({
-                text: question,
-                state: state,
-                checked: state === "yes"
-              });
-            });
+      function setDraftValue(path, value) {
+        const parts = path.split(".");
+        let cursor = draft;
+        for (let index = 0; index < parts.length - 1; index += 1) {
+          cursor = cursor[parts[index]];
+        }
+        const last = parts[parts.length - 1];
+        if (last === "state") {
+          const state = normalizeQuestionState(value);
+          cursor.state = state;
+          cursor.checked = state === "yes";
+          return;
+        }
+        cursor[last] = value;
+      }
 
-            sectionData.subsections.push(subsectionData);
-          });
-
-          jsonData.sections.push(sectionData);
+      function syncFieldValue(root, path, value) {
+        root.querySelectorAll('[data-path="' + cssEscape(path) + '"]').forEach(function(element) {
+          if ("value" in element) {
+            element.value = value;
+          }
         });
-
-        const formTitle = document.getElementById("page-title").textContent;
-        const suggestedPrefix = sanitizeFileName(formTitle || "form");
-        const suggestedName = sanitizeFileName(formName || "form");
-        const suggestedDate = processingDate || new Date().toISOString().split("T")[0];
-        downloadFile(
-          JSON.stringify(jsonData, null, 2),
-          suggestedPrefix + "_" + suggestedName + "_" + suggestedDate + ".json",
-          "application/json;charset=utf-8"
-        );
       }
 
-      function clearCurrentForm() {
-        if (!auditData || !Array.isArray(auditData.sections) || !auditData.sections.length) {
-          return;
+      function syncStateControls(root, path, state) {
+        root.querySelectorAll('[data-state-path="' + cssEscape(path) + '"]').forEach(function(control) {
+          control.querySelectorAll("[data-state-value]").forEach(function(button) {
+            const active = button.dataset.stateValue === state;
+            button.classList.toggle("is-active", active);
+            button.setAttribute("aria-pressed", active ? "true" : "false");
+          });
+        });
+      }
+
+      function cssEscape(value) {
+        if (window.CSS && typeof window.CSS.escape === "function") {
+          return window.CSS.escape(value);
         }
-
-        if (!confirm("Do you really want to clear the currently loaded form data?")) {
-          return;
-        }
-
-        checkStates = {};
-        commentStates = {};
-        formMetadata = {};
-        themeColor = "";
-        document.getElementById("project-name").value = "";
-        document.getElementById("audit-date").value = "";
-        updateHeaderContent("", "");
-        updateFormFieldMetadata(defaultFormMetadata);
-        applyThemeColor("");
-        renderSections();
-        updateScores();
-        showStatus("The current form data has been cleared.");
-      }
-
-      function updateUIState() {
-        const hasData = Boolean(auditData && Array.isArray(auditData.sections) && auditData.sections.length);
-
-        document.getElementById("empty-state").classList.toggle("hidden", hasData);
-        document.getElementById("summary").classList.toggle("hidden", !hasData);
-        document.getElementById("btn-export-json").disabled = !hasData;
-        document.getElementById("btn-clear").disabled = !hasData;
-        document.getElementById("project-name").disabled = !hasData;
-        document.getElementById("audit-date").disabled = !hasData;
-
-        if (!hasData) {
-          document.getElementById("sections-container").innerHTML = "";
-        }
-      }
-
-      function showStatus(message) {
-        const statusBar = document.getElementById("status-bar");
-        statusBar.textContent = message;
-        statusBar.classList.remove("hidden");
-      }
-
-      function getCheckId(sectionId, subIndex, questionIndex) {
-        return "check_" + sectionId + "_" + subIndex + "_" + questionIndex;
-      }
-
-      function getCommentId(sectionId, subIndex) {
-        return "comment_" + sectionId + "_" + subIndex;
-      }
-
-      function updateHeaderContent(title, description) {
-        const pageTitle = document.getElementById("page-title");
-        const pageSubtitle = document.getElementById("page-subtitle");
-        const nextTitle = typeof title === "string" && title.trim() ? title.trim() : defaultHeaderTitle;
-        const nextDescription = typeof description === "string" && description.trim() ? description.trim() : defaultHeaderSubtitle;
-
-        pageTitle.textContent = nextTitle;
-        pageSubtitle.textContent = nextDescription;
-      }
-
-      function updateFormFieldMetadata(metadata) {
-        const nextMetadata = metadata || defaultFormMetadata;
-        document.getElementById("project-name-label").textContent = nextMetadata.nameLabel || defaultFormMetadata.nameLabel;
-        document.getElementById("project-name").placeholder = nextMetadata.namePlaceholder || defaultFormMetadata.namePlaceholder;
-        document.getElementById("audit-date-label").textContent = nextMetadata.dateLabel || defaultFormMetadata.dateLabel;
-      }
-
-      function getFormMetadataValue(key) {
-        if (formMetadata && typeof formMetadata[key] === "string" && formMetadata[key].trim()) {
-          return formMetadata[key].trim();
-        }
-        return defaultFormMetadata[key] || "";
-      }
-
-      function getThemeColorValue() {
-        return themeColor || defaultThemeColor;
-      }
-
-      function normalizeThemeColor(value) {
-        const trimmedValue = typeof value === "string" ? value.trim() : "";
-        return /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(trimmedValue) ? trimmedValue : "";
+        return String(value).replace(/["\\]/g, "\\$&");
       }
 
       function applyThemeColor(color) {
+        const normalized = normalizeThemeColor(color) || DEFAULT_THEME_COLOR;
         const rootStyle = document.documentElement.style;
-        const accent = normalizeThemeColor(color) || defaultThemeColor;
+        rootStyle.setProperty("--accent", normalized);
+        rootStyle.setProperty("--accent-dark", mixHexColor(normalized, "#000000", 0.18));
+        rootStyle.setProperty("--accent-text", mixHexColor(normalized, "#000000", 0.36));
+        rootStyle.setProperty("--accent-soft", mixHexColor(normalized, "#ffffff", 0.84));
+        rootStyle.setProperty("--accent-soft-strong", mixHexColor(normalized, "#ffffff", 0.76));
+        rootStyle.setProperty("--accent-border-soft", hexToRgba(normalized, 0.22));
+        rootStyle.setProperty("--accent-shadow", hexToRgba(normalized, 0.12));
+      }
 
-        rootStyle.setProperty("--accent", accent);
-        rootStyle.setProperty("--accent-dark", mixHexColor(accent, "#000000", 0.2));
-        rootStyle.setProperty("--accent-text", mixHexColor(accent, "#000000", 0.36));
-        rootStyle.setProperty("--accent-border-soft", mixHexColor(accent, "#ffffff", 0.78));
-        rootStyle.setProperty("--accent-bg-soft", mixHexColor(accent, "#ffffff", 0.82));
-        rootStyle.setProperty("--accent-bg-soft-strong", mixHexColor(accent, "#ffffff", 0.74));
-        rootStyle.setProperty("--accent-shadow", hexToRgba(accent, 0.1));
+      function normalizeThemeColor(value) {
+        const trimmed = typeof value === "string" ? value.trim() : "";
+        return /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(trimmed) ? trimmed : "";
       }
 
       function mixHexColor(baseHex, mixHex, ratio) {
         const base = hexToRgb(baseHex);
         const mix = hexToRgb(mixHex);
         const clampedRatio = Math.max(0, Math.min(1, ratio));
-
         return rgbToHex(
           Math.round(base.r * (1 - clampedRatio) + mix.r * clampedRatio),
           Math.round(base.g * (1 - clampedRatio) + mix.g * clampedRatio),
@@ -1075,12 +2069,10 @@
       }
 
       function hexToRgb(hex) {
-        const normalized = normalizeThemeColor(hex) || defaultThemeColor;
-        const shortHex = normalized.length === 4;
-        const parts = shortHex
+        const normalized = normalizeThemeColor(hex) || DEFAULT_THEME_COLOR;
+        const parts = normalized.length === 4
           ? normalized.slice(1).split("").map(function(char) { return char + char; })
           : [normalized.slice(1, 3), normalized.slice(3, 5), normalized.slice(5, 7)];
-
         return {
           r: parseInt(parts[0], 16),
           g: parseInt(parts[1], 16),
@@ -1099,62 +2091,25 @@
         return "rgba(" + rgb.r + ", " + rgb.g + ", " + rgb.b + ", " + alpha + ")";
       }
 
-      function normalizeQuestionState(question) {
-        if (question && typeof question.state === "string") {
-          return normalizeCheckState(question.state);
-        }
-        if (question && typeof question.answer === "string") {
-          return normalizeCheckState(question.answer);
-        }
-        if (question && typeof question.checked === "boolean") {
-          return question.checked ? "yes" : "unset";
-        }
-        return "unset";
+      function readFieldValue(target) {
+        return target.value;
       }
 
-      function normalizeCheckState(value) {
-        if (value === "yes" || value === "checked" || value === true) {
-          return "yes";
+      function moveArrayItem(array, fromIndex, toIndex) {
+        if (fromIndex < 0 || fromIndex >= array.length || toIndex < 0 || toIndex >= array.length || fromIndex === toIndex) {
+          return;
         }
-        if (value === "no" || value === false) {
-          return "no";
-        }
-        return "unset";
-      }
-
-      function renderStateButton(checkId, state, label, activeState) {
-        const activeClass = state === activeState ? " is-active" : "";
-        return `<button type="button" class="state-option${activeClass}" data-check-id="${escapeAttribute(checkId)}" data-state="${escapeAttribute(state)}" aria-pressed="${state === activeState ? "true" : "false"}">${escapeHtml(label)}</button>`;
-      }
-
-      function syncQuestionStateUI(checkId, state) {
-        const buttons = document.querySelectorAll('[data-check-id="' + cssEscape(checkId) + '"]');
-        buttons.forEach(function(button) {
-          const isActive = button.dataset.state === state;
-          button.classList.toggle("is-active", isActive);
-          button.setAttribute("aria-pressed", isActive ? "true" : "false");
-        });
-
-        const item = buttons.length ? buttons[0].closest(".checkbox-item") : null;
-        if (item) {
-          item.setAttribute("data-state", state);
-        }
-      }
-
-      function cssEscape(value) {
-        if (window.CSS && typeof window.CSS.escape === "function") {
-          return window.CSS.escape(value);
-        }
-        return String(value).replace(/["\\]/g, "\\$&");
+        const item = array.splice(fromIndex, 1)[0];
+        array.splice(toIndex, 0, item);
       }
 
       function sanitizeFileName(value) {
-        return value
+        return String(value || "")
           .toLowerCase()
           .normalize("NFD")
           .replace(/[\u0300-\u036f]/g, "")
           .replace(/[^a-z0-9]+/g, "_")
-          .replace(/^_+|_+$/g, "") || "formular";
+          .replace(/^_+|_+$/g, "") || "kinjuson_form";
       }
 
       function downloadFile(content, fileName, mimeType) {
@@ -1163,8 +2118,10 @@
         const link = document.createElement("a");
         link.href = url;
         link.download = fileName;
+        document.body.appendChild(link);
         link.click();
-        URL.revokeObjectURL(url);
+        link.remove();
+        setTimeout(function() { URL.revokeObjectURL(url); }, 0);
       }
 
       function escapeHtml(value) {
@@ -1178,6 +2135,15 @@
 
       function escapeAttribute(value) {
         return escapeHtml(value).replace(/`/g, "&#96;");
+      }
+
+      function serializeJsonForScript(value) {
+        return JSON.stringify(value).replace(/</g, "\\u003c");
+      }
+
+      function showStatus(message) {
+        statusBar.textContent = message;
+        statusBar.classList.remove("is-hidden");
       }
     })();
   </script>

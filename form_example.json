@@ -4,6 +4,7 @@
   "form": {
     "title": "Website Launch Readiness",
     "description": "A simple example form for checking whether a website is ready to launch.",
+    "task": "Review the completed form, summarize the main blockers, and recommend the next actions.",
     "themeColor": "#1d6fd6",
     "nameLabel": "Project",
     "namePlaceholder": "Enter project name...",
@@ -18,6 +19,7 @@
       "subsections": [
         {
           "title": "Core pages",
+          "description": "Review the readiness and approval status of the primary website pages.",
           "note": "Homepage is done, pricing page still needs legal review.",
           "questions": [
             {
@@ -45,6 +47,7 @@
       "subsections": [
         {
           "title": "Pre-launch review",
+          "description": "Confirm the essential quality checks have been completed before launch.",
           "note": "",
           "questions": [
             {
